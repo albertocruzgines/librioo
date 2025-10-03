@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Mi estantería{% endblock %}
+{% block content %}
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/bootstrap-grid.min.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/swiper-bundle.min.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/magnific-popup.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/aos.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/odometer.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/main.css' %}">
+<style>
+  .shelf-header { display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; margin-bottom:1rem; }
+  .pill { display:inline-block; padding:.35rem .7rem; border:1px solid #e5e7eb; border-radius:999px; background:#fff; cursor:pointer; }
+  .pill.active { background:#111; color:#fff; border-color:#111; }
+  .search { flex:1; min-width:220px; }
+  .select { padding:.45rem .6rem; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:1rem; }
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; box-shadow:0 6px 16px rgba(0,0,0,.06); display:flex; flex-direction:column; }
+  .status-strip { height:6px; }
+  .status-favorite { background: linear-gradient(90deg, #fde68a, #f59e0b); }
+  .status-pending  { background: linear-gradient(90deg, #c7d2fe, #6366f1); }
+  .status-reading  { background: linear-gradient(90deg, #a7f3d0, #10b981); }
+  .cover { width:100%; height:180px; object-fit:cover; background:#f6f7f8; }
+  .body { padding:1rem; display:flex; flex-direction:column; gap:.4rem; }
+  .title { font-weight:700; line-height:1.2; }
+  .muted { color:#6b7280; font-size:.9rem; }
+  .badges { display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.25rem; }
+  .badge { display:inline-block; padding:.1rem .5rem; border-radius:999px; background:#f1f5f9; font-size:.78rem; }
+  .stats { display:flex; gap:1rem; font-size:.86rem; color:#4b5563; margin-top:.25rem; flex-wrap:wrap; }
+  .actions { display:flex; gap:.35rem; flex-wrap:wrap; margin-top:.5rem; }
+  .actions form { display:inline-block; }
+  .btn.primary { background:#111; color:white; border-color:#111; }
+  .btn.danger  { border-color:#ef4444; color:#ef4444; }
+  .empty { padding:2rem; text-align:center; color:#6b7280; border:1px dashed #e5e7eb; border-radius:12px; background:#fafafa; }
+  .pager { display:flex; align-items:center; gap:.5rem; justify-content:flex-end; margin:1rem 0; }
+  .pager .btn { min-width:90px; }
+</style>
+
+<section class="sec-1-home-1" data-background="{% static 'magzin/assets/imgs/page/bg-home1-sec1.png' %}">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h1 class="ds-2 lh-0 mb-0 text-anime-style-2">Mi Estanteria</h1>
+                            <p class="fs-5 mt-0 text-anime-style-1">Un espacio donde escribir y leer son experiencias compartidas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <div class="container-fluid">
+          <div class="shelf-header">
+  <div id="filters">
+    <button class="pill active" data-filter="all">Todos</button>
+    <button class="pill" data-filter="reading">Leyendo</button>
+    <button class="pill" data-filter="favorite">Favoritos</button>
+    <button class="pill" data-filter="pending">Pendientes</button>
+  </div>
+
+  <input id="search" class="search" type="search" placeholder="Buscar por título, autor o categoría…">
+
+  <select id="sort" class="select" aria-label="Ordenar por">
+    <option value="recent">Recientes (añadidos)</option>
+    <option value="title">Título (A–Z)</option>
+    <option value="author">Autor (A–Z)</option>
+    <option value="chapters">Más capítulos</option>
+    <option value="followers">Más seguidores</option>
+    <option value="price_asc">Precio (menor primero)</option>
+    <option value="price_desc">Precio (mayor primero)</option>
+  </select>
+
+  <select id="pageSize" class="select" aria-label="Elementos por página">
+    <option value="8">8 / pág.</option>
+    <option value="12" selected>12 / pág.</option>
+    <option value="24">24 / pág.</option>
+    <option value="48">48 / pág.</option>
+  </select>
+</div>
+{% if shelf %}
+  <div class="row g-4 mt-2">
+    {% for item in shelf %}
+      <div class="col-lg-4 col-md-6 col-12">
+      {% include "library/partials/book_card.html" with b=item.book show_shelf_actions=1 subs_ids=subs_ids %}
+
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>No tienes libros en tu estantería aún.</p>
+{% endif %}
+  </div>
+  </section>
+
+
+<script>
+  (function() {
+    const pills = document.querySelectorAll('.pill');
+    const search = document.getElementById('search');
+    const sortSel = document.getElementById('sort');
+    const pageSizeSel = document.getElementById('pageSize');
+    const container = document.getElementById('cards');
+    const allCards = container ? Array.from(container.querySelectorAll('.card')) : [];
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const pageInfo = document.getElementById('pageInfo');
+
+    let currentPage = 1;
+
+    function getActiveFilter() {
+      const active = document.querySelector('.pill.active');
+      return active ? active.getAttribute('data-filter') : 'all';
+    }
+
+    function filteredCards() {
+      const filter = getActiveFilter();
+      const q = (search.value || '').toLowerCase();
+      return allCards.filter(card => {
+        const status = card.getAttribute('data-status');
+        const title = (card.getAttribute('data-title') || '').toLowerCase();
+        const author = (card.getAttribute('data-author') || '').toLowerCase();
+        const category = (card.getAttribute('data-category') || '').toLowerCase();
+
+        const byStatus = (filter === 'all') || (status === filter);
+        const byText = !q || title.includes(q) || author.includes(q) || category.includes(q);
+        return byStatus && byText;
+      });
+    }
+
+    function sortCards(cards) {
+      const mode = sortSel.value;
+      const parseNum = (el, key) => parseFloat(el.getAttribute(key) || '0') || 0;
+      const parseStr = (el, key) => (el.getAttribute(key) || '').toLowerCase();
+
+      const cmp = {
+        recent:   (a,b) => parseNum(b,'data-added')   - parseNum(a,'data-added'),
+        title:    (a,b) => parseStr(a,'data-title').localeCompare(parseStr(b,'data-title')),
+        author:   (a,b) => parseStr(a,'data-author').localeCompare(parseStr(b,'data-author')),
+        chapters: (a,b) => parseNum(b,'data-chapters')- parseNum(a,'data-chapters'),
+        followers:(a,b) => parseNum(b,'data-followers')-parseNum(a,'data-followers'),
+        price_asc:(a,b) => parseNum(a,'data-price')   - parseNum(b,'data-price'),
+        price_desc:(a,b)=> parseNum(b,'data-price')   - parseNum(a,'data-price'),
+      }[mode] || (() => 0);
+
+      return cards.sort(cmp);
+    }
+
+    function render() {
+      if (!container) return;
+      const size = parseInt(pageSizeSel.value, 10) || 12;
+      let cards = sortCards(filteredCards());
+
+      allCards.forEach(c => c.style.display = 'none');
+
+      const total = cards.length;
+      const totalPages = Math.max(1, Math.ceil(total / size));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * size;
+      const end = start + size;
+      cards.slice(start, end).forEach(c => c.style.display = '');
+
+      if (pageInfo) pageInfo.textContent = `Página ${currentPage} de ${totalPages} · ${total} libros`;
+      if (prevBtn) prevBtn.disabled = (currentPage <= 1);
+      if (nextBtn) nextBtn.disabled = (currentPage >= totalPages);
+    }
+
+    pills.forEach(p => p.addEventListener('click', () => {
+      pills.forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      currentPage = 1;
+      render();
+    }));
+
+    if (search) search.addEventListener('input', () => { currentPage = 1; render(); });
+    if (sortSel) sortSel.addEventListener('change', () => { currentPage = 1; render(); });
+    if (pageSizeSel) pageSizeSel.addEventListener('change', () => { currentPage = 1; render(); });
+    if (prevBtn) prevBtn.addEventListener('click', () => { currentPage = Math.max(1, currentPage - 1); render(); });
+    if (nextBtn) nextBtn.addEventListener('click', () => { currentPage = currentPage + 1; render(); });
+
+    render();
+  })();
+</script>
+
+{% endblock %}

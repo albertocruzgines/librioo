@@ -1,0 +1,150 @@
+{# templates/library/partials/book_card.html #}
+{% load static %}
+
+<div class="article card-7 card-h">
+  <div class="card-body">
+    <!-- esquina/arrow card-7 -->
+    <div class="card-corner">
+      <a href="{% url 'library:book_detail' b.id %}" class="arrow-box" aria-label="Ver libro">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+          <path d="M13.75 6.75L19.25 12L13.75 17.25" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19 12H4.75" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <div class="curve-one"></div>
+      <div class="curve-two"></div>
+    </div>
+
+    <!-- CONTENIDO EN FILA -->
+    <div class="h-wrap d-flex gap-3 align-items-start">
+      <!-- Mini portada izquierda -->
+      <div class="thumb">
+        <div class="hover-effect-30 rounded-16 overflow-hidden">
+          <a href="{% url 'library:book_detail' b.id %}" class="ratio-3x4">
+            {% if b.cover %}
+              <img class="cover-image" src="{{ b.cover.url }}" alt="{{ b.title }}">
+            {% else %}
+              <img class="cover-image" src="{% static 'magzin/assets/imgs/other/img-other-9.png' %}" alt="Sin portada">
+            {% endif %}
+          </a>
+        </div>
+      </div>
+
+      <!-- Texto a la derecha -->
+      <div class="flex-grow-1 d-flex flex-column">
+        <!-- info superior / badges -->
+        <div class="card-info d-flex flex-wrap align-items-center gap-2 mb-2">
+          {% if b.status %}
+            <span class="badge fs-8
+              {% if b.status == 'serial' %} bg-1
+              {% elif b.status == 'closed' %} bg-2
+              {% else %} bg-3 {% endif %}">
+              {% if b.status == 'serial' %}En publicación
+              {% elif b.status == 'closed' %}Texto completo
+              {% else %}Borrador{% endif %}
+            </span>
+          {% endif %}
+
+          {% if b.category %}
+            <a href="{% url 'library:discover' %}?cat={{ b.category.id }}" class="badge bg-3 fs-8">
+              {{ b.category.name }}
+            </a>
+          {% endif %}
+
+          {% if b.is_paid %}
+            {% if b.price_cents %}
+              <span class="badge bg-dark text-white fs-8">€ {{ b.price_cents|floatformat:-2 }}</span>
+            {% else %}
+              <span class="badge bg-dark text-white fs-8">De pago</span>
+            {% endif %}
+          {% else %}
+            <span class="badge bg-success-subtle text-success-emphasis fs-8">Gratis</span>
+          {% endif %}
+
+          <ul class="d-flex align-items-center text-600 m-0 ps-3">
+            <li><p class="fs-8 m-0">📖 {{ b.num_chapters|default:b.chapters.count }} cap.</p></li>
+          </ul>
+
+          <a href="{% url 'library:book_detail' b.id %}" class="book-mark ms-auto" aria-label="Abrir libro">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none">
+              <path d="M5.625 5.625c0-.92.746-1.666 1.667-1.666h5.416c.92 0 1.667.746 1.667 1.666V16.042L10 12.292 5.625 16.042V5.625Z"
+                    stroke="#626568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+
+        <!-- título + autor -->
+        <a href="{% url 'library:book_detail' b.id %}" class="hover-underline">
+          <h6 class="card-title mb-1 text-truncate-2">{{ b.title }}</h6>
+        </a>
+        <div class="text-600 fs-8 mb-2">por {{ b.author.username }}</div>
+
+        <!-- descripción (solo usamos campos existentes para evitar errores) -->
+        {% if b.synopsis %}
+          <p class="card-text text-600 fs-7 mb-2 text-truncate-3">
+            {{ b.synopsis|truncatechars:160 }}
+          </p>
+        {% endif %}
+
+        {% comment %} Acciones de estantería (opcionales) {% endcomment %}
+{% if show_shelf_actions %}
+  <div class="shelf-actions d-flex flex-wrap gap-2 mt-3">
+
+    <a class="btn btn-dark btn-sm button-effect-1"
+       href="{% url 'library:book_detail' b.id %}">
+      Ir al libro
+    </a>
+
+    <form class="d-inline" method="post"
+          action="{% url 'library:shelf_set_status' b.id 'reading' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-dark w-100 button-effect-1">Marcar leyendo</button>
+    </form>
+
+    <form class="d-inline" method="post"
+          action="{% url 'library:shelf_set_status' b.id 'favorite' %}">
+      {% csrf_token %}
+      <button class="btn btn-sm btn-dark w-100 button-effect-1" type="submit">❤ Favorito</button>
+    </form>
+
+    <form class="d-inline" method="post"
+          action="{% url 'library:shelf_set_status' b.id 'pending' %}">
+      {% csrf_token %}
+      <button class="btn btn-sm btn-dark w-100 button-effect-1" type="submit">Pendiente</button>
+    </form>
+
+    <form class="d-inline" method="post"
+          action="{% url 'library:shelf_remove' b.id %}">
+      {% csrf_token %}
+      <button class="btn btn-sm btn-dark w-100 button-effect-1" type="submit">Quitar</button>
+    </form>
+
+    {# Seguir / Dejar de seguir si hay subs_ids en contexto #}
+    {% if subs_ids %}
+      {% if b.id in subs_ids %}
+        <form class="d-inline" method="post"
+              action="{% url 'library:subscribe_book' b.id %}">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-dark w-100 button-effect-1" type="submit">Dejar de seguir</button>
+        </form>
+      {% else %}
+        <form class="d-inline" method="post"
+              action="{% url 'library:subscribe_book' b.id %}">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-dark w-100 button-effect-1" type="submit">Seguir</button>
+        </form>
+      {% endif %}
+    {% endif %}
+
+  </div>
+{% endif %}
+
+
+        <!-- meta inferior -->
+        <div class="text-600 fs-8 mt-auto">
+          <span>⏱ {{ b.updated_at|date:"d M Y" }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

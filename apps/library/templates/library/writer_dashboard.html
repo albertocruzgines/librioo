@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Panel de escritor{% endblock %}
+{% load static %}
+{% block content %}
+<section class="sec-1-home-1" data-background="{% static 'magzin/assets/imgs/page/bg-home1-sec1.png' %}">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h1 class="ds-2 lh-0 mb-0 text-anime-style-2">Panel del Escritor.</h1>
+                            <p class="fs-5 mt-0 text-anime-style-1">Un espacio donde escribir y leer son experiencias compartidas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <div class="container-fluid">
+                <div class="swiper swiper-card-hero py-2">
+                    <div class="swiper-wrapper">
+<p><a href="{% url 'library:book_create' %}">➕ Crear nuevo libro</a></p>
+
+<table style="width:100%; border-collapse:collapse;">
+  <thead>
+    <tr>
+      <th style="text-align:left; border-bottom:1px solid #ddd; padding:.5rem;">Libro</th>
+      <th style="text-align:right; border-bottom:1px solid #ddd; padding:.5rem;">Capítulos</th>
+      <th style="text-align:right; border-bottom:1px solid #ddd; padding:.5rem;">Lecturas</th>
+      <th style="text-align:right; border-bottom:1px solid #ddd; padding:.5rem;">Comentarios</th>
+      <th style="text-align:right; border-bottom:1px solid #ddd; padding:.5rem;">Likes</th>
+      <th style="text-align:right; border-bottom:1px solid #ddd; padding:.5rem;">Seguidores</th>
+      <th style="text-align:left; border-bottom:1px solid #ddd; padding:.5rem;">Estado</th>
+      <th style="text-align:left; border-bottom:1px solid #ddd; padding:.5rem;">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for b in books %}
+      <tr>
+        <td style="padding:.5rem;"><a href="{% url 'library:book_detail' b.id %}">{{ b.title }}</a></td>
+        <td style="padding:.5rem; text-align:right;">{{ b.num_chapters }}</td>
+        <td style="padding:.5rem; text-align:right;">{{ b.reads }}</td>
+        <td style="padding:.5rem; text-align:right;">{{ b.comments }}</td>
+        <td style="padding:.5rem; text-align:right;">{{ b.likes }}</td>
+        <td style="padding:.5rem; text-align:right;">{{ b.subs }}</td>
+        <td style="padding:.5rem;">{{ b.get_status_display }}</td>
+        <td style="padding:.5rem;">
+          <a href="{% url 'library:chapter_create' b.id %}">➕ Capítulo</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="8" style="padding:.5rem;">Aún no tienes libros.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+{% endblock %}

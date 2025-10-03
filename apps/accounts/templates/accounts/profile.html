@@ -1,0 +1,205 @@
+{# templates/accounts/profile.html #}
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Mi perfil{% endblock %}
+
+{% block content %}
+<section class="sec-1-author overflow-hidden">
+  <div class="container">
+
+    {# Cabecera de perfil #}
+    <div class="row mt-4">
+      <div class="col-12 d-flex align-items-start gap-3 flex-wrap">
+        <div>
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="{{ user.username }}"
+                 class="avatar avatar-xl rounded-circle"
+                 style="width:120px;height:120px;object-fit:cover;">
+          {% else %}
+            <img src="{% static 'magzin/assets/imgs/template/author/author-1.png' %}"
+                 alt="{{ user.username }}" class="avatar avatar-xl rounded-circle"
+                 style="width:120px;height:120px;object-fit:cover;">
+          {% endif %}
+        </div>
+        <div class="flex-grow-1">
+          <h2 class="mb-1">{{ user.username }}</h2>
+          <p class="text-600 mb-2">{{ user.bio|default:"—" }}</p>
+          <p class="mb-2">
+            <strong>Géneros favoritos:</strong>
+            {% if user.favorite_genres %}{{ user.favorite_genres|join:", " }}{% else %}—{% endif %}
+          </p>
+          <p class="mb-3"><strong>Rol:</strong> {% if user.is_writer %}Escritor{% else %}Lector{% endif %}</p>
+
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-dark btn-sm" href="{% url 'accounts:profile_edit' %}">Editar perfil</a>
+            {% if user.is_writer %}
+              <a class="btn btn-outline-dark btn-sm" href="{% url 'library:book_create' %}">➕ Nuevo libro</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# Stats opcionales (muestra solo si vienen en el contexto) #}
+    {% if stats_books or stats_followers or stats_reads or stats_views %}
+    <div class="row mt-4">
+      <div class="col-12 d-flex flex-wrap gap-3">
+        {% if stats_books %}<span class="badge bg-1 fs-8">📚 {{ stats_books|intcomma }} libros</span>{% endif %}
+        {% if stats_followers %}<span class="badge bg-3 fs-8">👥 {{ stats_followers|intcomma }} seguidores</span>{% endif %}
+        {% if stats_reads %}<span class="badge bg-2 fs-8">📘 {{ stats_reads|intcomma }} lecturas</span>{% endif %}
+        {% if stats_views %}<span class="badge bg-5 fs-8">👁️ {{ stats_views|intcomma }} vistas</span>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# Listado de libros del usuario en card-12 #}
+    <div class="row mt-4 g-4">
+      {% if my_books %}
+        {% for b in my_books %}
+        <div class="col-12">
+          <div class="article card-12 d-flex flex-md-row align-items-stretch flex-column">
+
+            {# imagen izquierda #}
+            <a href="{% url 'library:book_detail' b.id %}"
+               class="card-img-top hover-effect-30 rounded-16 overflow-hidden">
+              {% if b.cover %}
+                <img src="{{ b.cover.url }}" alt="{{ b.title }}" class="cover-image">
+              {% else %}
+                <img src="{% static 'magzin/assets/imgs/page/img-1.png' %}" alt="{{ b.title }}" class="cover-image">
+              {% endif %}
+            </a>
+
+            {# cuerpo #}
+            <div class="card-body">
+              <div class="card-corner">
+                <a href="{% url 'library:book_detail' b.id %}" class="arrow-box" aria-label="Ver libro">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                    <path d="M13.75 6.75L19.25 12L13.75 17.25" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M19 12H4.75" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+                <div class="curve-one"></div>
+                <div class="curve-two"></div>
+              </div>
+
+              <div class="left">
+                <div class="mb-2 d-flex flex-wrap align-items-center gap-2">
+                  {% if b.category %}
+                    <a href="{% url 'library:discover' %}?cat={{ b.category.id }}" class="badge bg-3 fs-8">
+                      {{ b.category.name }}
+                    </a>
+                  {% endif %}
+
+                  {% if b.is_paid %}
+                    {% if b.price_cents %}
+                      <span class="badge bg-dark text-white fs-8">€ {{ b.price_cents|floatformat:-2 }}</span>
+                    {% else %}
+                      <span class="badge bg-dark text-white fs-8">De pago</span>
+                    {% endif %}
+                  {% else %}
+                    <span class="badge bg-success-subtle text-success-emphasis fs-8">Gratis</span>
+                  {% endif %}
+
+                  {% if b.status %}
+                    <span class="badge bg-1 fs-8">
+                      {% if b.status == 'serial' %}En publicación{% elif b.status == 'closed' %}Texto completo{% else %}Borrador{% endif %}
+                    </span>
+                  {% endif %}
+                </div>
+
+                <a href="{% url 'library:book_detail' b.id %}" class="hover-underline">
+                  <h4 class="card-title mb-0 mt-3">{{ b.title }}</h4>
+                </a>
+
+                {% if b.synopsis %}
+                <p class="card-text text-600 fs-7 mb-0 mt-3 text-truncate-3">
+                  {{ b.synopsis|truncatechars:220 }}
+                </p>
+                {% endif %}
+
+                <div class="bottom mt-auto d-flex flex-wrap align-items-center gap-2 pt-5">
+                  <a href="#" class="author d-flex align-items-center gap-2">
+                    {% if user.avatar %}
+                      <img class="avatar avatar-md rounded-circle" src="{{ user.avatar.url }}" alt="{{ user.username }}">
+                    {% else %}
+                      <img class="avatar avatar-md rounded-circle" src="{% static 'magzin/assets/imgs/template/author/author-1.png' %}" alt="{{ user.username }}">
+                    {% endif %}
+                    <span class="fs-7 text-dark fw-regular">{{ user.username }}</span>
+                  </a>
+
+                  <ul class="d-flex align-items-center gap-4 text-600 m-0 ps-3">
+                    <li><p class="fs-8 m-0">{{ b.updated_at|date:"M d, Y" }}</p></li>
+                  </ul>
+
+                  <div class="ms-lg-auto ms-5 d-flex align-items-center gap-3 me-5">
+                    {% with seg=b.subscribers.all|length reads=b.reads_count|default:0 views=b.views|default:0 %}
+                      {% if seg %}<span class="fs-8">👥 {{ seg|intcomma }}</span>{% endif %}
+                      {% if reads %}<span class="fs-8">📘 {{ reads|intcomma }}</span>{% endif %}
+                      {% if views %}<span class="fs-8">👁️ {{ views|intcomma }}</span>{% endif %}
+                    {% endwith %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="right d-flex flex-column align-items-end">
+                <a href="{% url 'library:book_detail' b.id %}" class="book-mark" aria-label="Abrir libro">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none">
+                    <path d="M5.625 5.625c0-.92.746-1.667 1.667-1.667h5.416c.92 0 1.667.747 1.667 1.667V16.042L10 12.292 5.625 16.042V5.625Z"
+                          stroke="#626568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="col-12">
+          <div class="text-center text-muted py-5">Aún no tienes publicaciones.</div>
+        </div>
+      {% endif %}
+    </div>
+
+    {# paginación si usas page_obj #}
+    {% if page_obj %}
+    <div class="row sec-padding">
+      <div class="col-12 d-flex justify-content-center align-items-center">
+        <nav>
+          <ul class="pagination gap-2">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="icon-lg pagination_item rounded-circle icon-shape" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none">
+                    <path d="M9.5 6.5L4.786 11L9.5 15.5" stroke="#0E0E0F" stroke-width="1.28571" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17.214 11H5" stroke="#0E0E0F" stroke-width="1.28571" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </li>
+            {% endif %}
+            {% for i in page_obj.paginator.page_range %}
+              <li class="page-item">
+                <a class="icon-lg pagination_item rounded-circle icon-shape fs-18 fw-semi-bold {% if i == page_obj.number %}current{% endif %}" href="?page={{ i }}">{{ i }}</a>
+              </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="icon-lg pagination_item rounded-circle icon-shape" href="?page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none">
+                    <path d="M12.5 6.5L17.214 11L12.5 15.5" stroke="#0E0E0F" stroke-width="1.28571" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 11H4.786" stroke="#0E0E0F" stroke-width="1.28571" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

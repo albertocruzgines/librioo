@@ -1,0 +1,295 @@
+{% load static %}
+<!doctype html>
+<html lang="es" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Librioo{% endblock %}</title>
+    <link rel="shortcut icon" type="image/x-icon" href="assets/imgs/template/logo/favicon.svg">
+    <!-- Libs CSS -->
+  {# GLOBAL CSS #}
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/bootstrap-grid.min.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+
+    <!-- Main CSS -->
+  <style>
+  .avatar-xs{width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle}
+  .avatar-circle{display:inline-flex;width:28px;height:28px;border-radius:50%;background:#e5e7eb;align-items:center;justify-content:center;font-size:.8rem}
+  .navbar .dropdown-menu{list-style:none; min-width:220px; border:1px solid #e5e7eb; border-radius:12px; padding:.5rem; box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  .navbar .dropdown-item{border-radius:8px}
+</style>
+    <style>
+  :root{ --cover-w:140px; } /* ancho de portada; cambia a 128/150 si prefieres */
+
+  .book-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(360px, 1fr));
+    gap:1rem;
+  }
+.book-stats li{list-style:none}
+.book-stats li+li::before{content:"·";margin:0 .35rem;opacity:.6}
+
+  .book-card{
+    display:flex; gap:1rem; align-items:flex-start;
+    background:#fff; border:1px solid #e5e7eb; border-radius:16px;
+    padding:.9rem; box-shadow:0 8px 18px rgba(0,0,0,.06);
+    transition:transform .12s ease, box-shadow .12s ease;
+    text-decoration:none; color:inherit;
+  }
+  .book-card:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,0,0,.08); }
+/* layout horizontal para card-7 */
+.card-7.card-h .h-wrap{display:flex;gap:14px;align-items:flex-start}
+.card-7.card-h .thumb{width:110px;flex:0 0 110px}
+.card-7.card-h .thumb .ratio-3x4{position:relative;display:block;width:100%}
+.card-7.card-h .thumb .ratio-3x4::before{content:"";display:block;padding-top:133.333%} /* 3:4 */
+.card-7.card-h .thumb .cover-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@media (max-width:576px){
+  .card-7.card-h .h-wrap{flex-direction:column}
+  .card-7.card-h .thumb{width:100%;flex:0}
+}
+  /* ► Portada 2:3 */
+  .cover-2x3{
+    width:var(--cover-w);
+    aspect-ratio:2/3;
+    background:#f5f5f5;
+    border-radius:12px; overflow:hidden;
+    box-shadow:0 6px 14px rgba(0,0,0,.12);
+    flex-shrink:0; position:relative;
+  }
+  .cover-2x3 img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .cover-2x3 .ph{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:#9ca3af;
+  }
+
+  .book-body{ flex:1; display:flex; flex-direction:column; gap:.35rem; min-width:0; }
+  .book-title{ margin:0; font-weight:800; line-height:1.15; }
+  .book-author{ color:#6b7280; font-size:.9rem; text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
+  .book-desc{ color:#4b5563; font-size:.92rem; margin-top:.15rem; }
+  .book-meta{ display:flex; gap:.55rem; flex-wrap:wrap; align-items:center; margin-top:.3rem; color:#374151; font-size:.9rem; }
+
+  .badge{ display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .55rem; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb; font-size:.78rem; }
+  .badge-serial{ background:#e0f2fe; color:#075985; border-color:#bae6fd; }
+  .badge-closed{ background:#dcfce7; color:#065f46; border-color:#bbf7d0; }
+  .badge-draft{ background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+  .badge-free{ background:#dcfce7; color:#065f46; border-color:#bbf7d0; }
+  .badge-paid{ background:#fef3c7; color:#92400e; border-color:#fde68a; }
+  .price{ font-weight:700; }
+</style>
+  </head>
+  <body>
+        <header>
+        <div class="topbar d-none d-lg-block">
+            <div class="overflow-hidden">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="left">
+                        <ul class="list-unstyled d-inline-flex gap-3">
+                            <li>
+                                <a href="#" class="btn btn-sm fs-7 border-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21" fill="none">
+                                        <g opacity="0.5">
+                                            <path d="M10 16.5417C13.3368 16.5417 16.0417 13.8367 16.0417 10.5C16.0417 7.16327 13.3368 4.45833 10 4.45833C6.66332 4.45833 3.95837 7.16327 3.95837 10.5C3.95837 13.8367 6.66332 16.5417 10 16.5417Z" stroke="white" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M12.7083 10.5C12.7083 14.25 11.0355 16.5417 9.99996 16.5417C8.96446 16.5417 7.29163 14.25 7.29163 10.5C7.29163 6.74999 8.96446 4.45833 9.99996 4.45833C11.0355 4.45833 12.7083 6.74999 12.7083 10.5Z" stroke="white" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M4.16663 10.5H9.99996H15.8333" stroke="white" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
+                                        </g>
+                                    </svg>
+                                    <span class="text-white dark-mode-invert">Breaking</span>
+                                </a>
+                            </li>
+                            <li class="mw-350px">
+                                <div class="swiper swiper-topbar">
+                                    <div class="swiper-wrapper">
+                                        <div class="swiper-slide">
+                                            <a href="#" class="text-white fs-7 text-nowrap dark-mode-invert">Sustainable Eating in a Climate-Conscious World</a>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <a href="#" class="text-white fs-7 text-nowrap dark-mode-invert">Sustainable Eating in a sub-menu sub-menu Climate-Conscious World</a>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <a href="#" class="text-white fs-7 text-nowrap dark-mode-invert">Sustainable Eating in a Climate-Conscious World</a>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <a href="#" class="text-white fs-7 text-nowrap dark-mode-invert">Sustainable Eating in a Climate-Conscious World</a>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <a href="#" class="text-white fs-7 text-nowrap dark-mode-invert">Sustainable Eating in a Climate-Conscious World</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="switch-btn">
+                                <button type="button" class="btn btn-sm fs-7 switch-btn-prev border-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M6.83335 4.5L3.16669 8L6.83335 11.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M12.8333 8H3.33331" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </button>
+                                <button type="button" class="btn btn-sm fs-7 switch-btn-next border-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M9.16669 4.5L12.8334 8L9.16669 11.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M12.6667 8H3.16669" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="right">
+                        <ul class="list-unstyled d-flex ps-0">
+                            <li>
+                                <span class="d-flex align-items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21" fill="none">
+                                        <g opacity="0.5">
+                                            <path d="M3.95833 6.95834C3.95833 6.03786 4.70452 5.29167 5.62499 5.29167H14.375C15.2955 5.29167 16.0417 6.03786 16.0417 6.95834V14.0417C16.0417 14.9622 15.2955 15.7083 14.375 15.7083H5.62499C4.70452 15.7083 3.95833 14.9622 3.95833 14.0417V6.95834Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M4.58333 5.91667L10 10.7083L15.4167 5.91667" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                        </g>
+                                    </svg>
+                                    <a href="#" class="link-effect-1 text-white fs-7 text-nowrap dark-mode-invert"><span class="">Subscribe Our Newsletter</span></a>
+                                </span>
+                            </li>
+                            <li class="ps-4"></li>
+                            <li class="border-end-700"></li>
+                            <li class="pe-4"></li>
+                            <li>
+                                <div class="d-flex align-items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="15" viewBox="0 0 14 15" fill="none">
+                                        <path d="M11.0943 1.85763H10.5967V1.35416C10.5967 1.06651 10.3635 0.833328 10.0759 0.833328C9.78823 0.833328 9.55505 1.06651 9.55505 1.35416V1.85763H4.44495V1.35416C4.44495 1.06651 4.21177 0.833328 3.92412 0.833328C3.63646 0.833328 3.40328 1.06651 3.40328 1.35416V1.85763H2.90575C1.48567 1.85763 0.330353 3.01295 0.330353 4.433V11.5913C0.330353 13.0114 1.48567 14.1667 2.90575 14.1667H11.0943C12.5144 14.1667 13.6697 13.0114 13.6697 11.5913V4.433C13.6697 3.01295 12.5144 1.85763 11.0943 1.85763ZM2.90575 2.8993H3.40328V3.91493C3.40328 4.20259 3.63646 4.43576 3.92412 4.43576C4.21177 4.43576 4.44495 4.20259 4.44495 3.91493V2.8993H9.55507V3.91493C9.55507 4.20259 9.78825 4.43576 10.0759 4.43576C10.3636 4.43576 10.5967 4.20259 10.5967 3.91493V2.8993H11.0943C11.94 2.8993 12.628 3.58732 12.628 4.433V4.93056H1.37202V4.433C1.37202 3.58732 2.06005 2.8993 2.90575 2.8993ZM11.0943 13.125H2.90575C2.06005 13.125 1.37202 12.437 1.37202 11.5913V5.97223H12.628V11.5913C12.628 12.437 11.94 13.125 11.0943 13.125ZM4.95711 8.02085C4.95711 8.30851 4.72394 8.54169 4.43628 8.54169H3.41198C3.12432 8.54169 2.89114 8.30851 2.89114 8.02085C2.89114 7.7332 3.12432 7.50002 3.41198 7.50002H4.43628C4.72391 7.50002 4.95711 7.7332 4.95711 8.02085ZM11.1089 8.02085C11.1089 8.30851 10.8757 8.54169 10.5881 8.54169H9.56377C9.27612 8.54169 9.04294 8.30851 9.04294 8.02085C9.04294 7.7332 9.27612 7.50002 9.56377 7.50002H10.5881C10.8757 7.50002 11.1089 7.7332 11.1089 8.02085ZM8.03004 8.02085C8.03004 8.30851 7.79686 8.54169 7.50921 8.54169H6.48491C6.19725 8.54169 5.96407 8.30851 5.96407 8.02085C5.96407 7.7332 6.19725 7.50002 6.48491 7.50002H7.50921C7.79684 7.50002 8.03004 7.7332 8.03004 8.02085ZM4.95711 11.0938C4.95711 11.3814 4.72394 11.6146 4.43628 11.6146H3.41198C3.12432 11.6146 2.89114 11.3814 2.89114 11.0938C2.89114 10.8061 3.12432 10.5729 3.41198 10.5729H4.43628C4.72391 10.5729 4.95711 10.8061 4.95711 11.0938ZM11.1089 11.0938C11.1089 11.3814 10.8757 11.6146 10.5881 11.6146H9.56377C9.27612 11.6146 9.04294 11.3814 9.04294 11.0938C9.04294 10.8061 9.27612 10.5729 9.56377 10.5729H10.5881C10.8757 10.5729 11.1089 10.8061 11.1089 11.0938ZM8.03004 11.0938C8.03004 11.3814 7.79686 11.6146 7.50921 11.6146H6.48491C6.19725 11.6146 5.96407 11.3814 5.96407 11.0938C5.96407 10.8061 6.19725 10.5729 6.48491 10.5729H7.50921C7.79684 10.5729 8.03004 10.8061 8.03004 11.0938Z" fill="white" />
+                                    </svg>
+                                    <span class="text-white fs-7 text-nowrap dark-mode-invert">June 24, 2025</span>
+                                </div>
+                            </li>
+                            <li class="pe-4"></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="navbar navbar-expand-lg style-1">
+            <div class="d-flex align-items-center">
+                <a class="navbar-brand fw-bold fs-3" href="/">
+                    <img class="dark-mode-invert" src="{% static 'magzin/assets/imgs/template/logo/Librioo_logo.png' %}"  width="140" alt="Logo">
+                    
+                </a>
+                <span class="text-muted fs-7 d-none d-lg-block">The colors of Life.</span>
+            </div>
+
+            <div class="navbar-collapse d-none d-lg-block" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link link-effect-1 " href="/"><span>Inicio</span></a>
+                    </li>
+                    <li class="nav-item position-relative">
+                        <span class="badge-new">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                <path d="M2.18102 5.83336H4.02138L3.64143 9.42543C3.63976 9.43626 3.6393 9.46831 3.6393 9.47914C3.6393 9.76624 3.87306 10 4.16016 10C4.3235 10 4.47929 9.92165 4.58267 9.78294L8.22266 4.58336C8.28972 4.49371 8.3268 4.38293 8.3268 4.27086C8.3268 3.98376 8.09311 3.75 7.80602 3.75H5.55351L5.9285 0.582047C5.92972 0.569992 5.93056 0.532913 5.93056 0.520859C5.93102 0.233765 5.69725 0 5.41016 0C5.24681 0 5.09102 0.0783539 4.98436 0.221252L1.7643 5C1.69724 5.08957 1.66016 5.20042 1.66016 5.3125C1.66016 5.59959 1.89392 5.83336 2.18102 5.83336Z" fill="#0E0E0F" />
+                            </svg>
+                        </span>
+                        <a class="nav-link link-effect-1 " href="/library/"><span>Libriooteca</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link link-effect-1 " href="/community/feed/"><span>Comunidad</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link link-effect-1 " href="/notifications/"><span>Mi Muro</span></a>
+                    </li>
+                      <li class="nav-item">
+                        <a class="nav-link link-effect-1 " href="/library/discover/"><span>Descubrir</span></a>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center gap-4">
+                          <div class="d-none d-lg-block" id="navbarNav">
+                        <ul class="navbar-nav">
+
+                        {% if user.is_authenticated %}
+                        <li class="nav-item dropdown user-dropdown">
+                          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if user.avatar %}
+                              <img src="{{ user.avatar.url }}" class="avatar-xs" alt="avatar">
+                            {% else %}
+                              <span class="avatar-circle">{{ user.username|first|upper }}</span>
+                            {% endif %}
+                            <span>{{ user.username }}</span>
+                          </a>
+                          <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Mi perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'library:writer_dashboard' %}">Mis libros</a></li>
+                            <li><a class="dropdown-item" href="{% url 'library:shelf' %}">Mi estantería</a></li>
+                            {% if user.is_staff %}
+                              <li><a class="dropdown-item" href="/admin/">Admin</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/accounts/logout/">Salir</a></li>
+                          </ul>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                          <a class="nav-link link-effect-1" href="/accounts/login/"><span>Entrar</span></a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link link-effect-1" href="/accounts/signup/"><span>Crear cuenta</span></a>
+                        </li>
+                        {% endif %}
+                        </ul>
+                    </div>
+                <div data-bs-toggle="modal" data-bs-target="#popupSearch" class="search-btn fs-7 d-none d-md-flex link-effect-2">
+                    <svg class="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M25.6667 25.6667L20.6667 20.6667M6.33337 14.6667C6.33337 10.0643 10.0643 6.33337 14.6667 6.33337C19.2691 6.33337 23 10.0643 23 14.6667C23 19.2691 19.2691 23 14.6667 23C10.0643 23 6.33337 19.2691 6.33337 14.6667Z" stroke="#0E0E0F" stroke-width="1.74463" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span class="text">
+                        <span class="text1">Search</span>
+                        <span class="text2">Search</span>
+                    </span>
+                </div>
+                <div class="group-btn-right d-flex align-items-center">
+                    <div class="dark-light-switcher">
+                        <svg class="svg-white dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10.0018 0.666664C4.85543 0.666664 0.666656 4.85406 0.666656 10.0004C0.666656 15.1468 4.85543 19.3356 10.0018 19.3356C15.1482 19.3356 19.337 15.1468 19.337 10.0004C19.337 4.85406 15.1482 0.666664 10.0018 0.666664ZM10.7212 2.13629C14.7526 2.4982 17.8982 5.87269 17.8982 10.0004C17.8982 14.1282 14.7526 17.5027 10.7212 17.8646V2.13629Z" fill="#75787D" />
+                        </svg>
+                        <svg class="svg-dark dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10.0018 0.666992C4.85543 0.666992 0.666656 4.85439 0.666656 10.0008C0.666656 15.1471 4.85543 19.3359 10.0018 19.3359C15.1482 19.3359 19.337 15.1471 19.337 10.0008C19.337 4.85439 15.1482 0.666992 10.0018 0.666992ZM10.7212 2.13662C14.7526 2.49852 17.8982 5.87302 17.8982 10.0008C17.8982 14.1285 14.7526 17.503 10.7212 17.8649V2.13662Z" fill="#0E0E0F" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    <!-- Footer -->
+    <footer>
+        <div class="section-footer sec-padding overflow-hidden">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <img class="dark-mode-invert" src="{% static 'magzin/assets/imgs/template/logo/Librioo_logo.png' %}"  width="140" alt="Logo">
+                        <div class="d-flex flex-wrap justify-content-center align-items-center gap-lg-5 gap-md-4">
+                            <a href="#" class="text-600 hover-dark d-block px-2 button-effect-1">Privacy Policy</a>
+                            <a href="#" class="text-600 hover-dark d-block px-2 button-effect-1">Term of Use</a>
+                            <a href="#" class="text-600 hover-dark d-block px-2 button-effect-1">Careers</a>
+                            <a href="#" class="text-600 hover-dark d-block px-2 button-effect-1">Help</a>
+                            <a href="#" class="text-600 hover-dark d-block px-2 button-effect-1">Become author</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Scroll top -->
+    <div class="btn-scroll-top">
+        <svg class="progress-square svg-content" width="100%" height="100%" viewBox="0 0 40 40">
+            <path d="M20 1a19 19 0 1 1 0 38 19 19 0 0 1 0-38" />
+        </svg>
+    </div>
+<script src="{% static 'magzin/assets/js/vendors/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'magzin/assets/js/vendors/aos.js' %}"></script>
+<script src="{% static 'magzin/assets/js/vendors/wow.min.js' %}"></script>
+<script src="{% static 'magzin/assets/js/vendors/swiper-bundle.min.js' %}"></script>
+<script src="{% static 'magzin/assets/js/vendors/jquery.magnific-popup.min.js' %}"></script>
+<script src="{% static 'magzin/assets/js/vendors/smart-stick-nav.js' %}"></script>
+<script src="{% static 'magzin/assets/js/vendors/headhesive.min.js' %}"></script>
+<script src="{% static 'magzin/assets/js/vendors/color-modes.js' %}"></script>
+<script src="{% static 'magzin/assets/js/main.js' %}"></script>
+  </body>
+</html>

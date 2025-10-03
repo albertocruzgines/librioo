@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Libros{% endblock %}
+{% block content %}
+<h1>Libros</h1>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;">
+  {% for b in object_list %}
+  <article style="border:1px solid #eee;border-radius:12px;padding:1rem;">
+    <a href="{% url 'library:book_detail' b.id %}" style="text-decoration:none;">
+      {% if b.cover %}<img src="{{ b.cover.url }}" alt="{{ b.title }}" style="width:100%;height:260px;object-fit:cover;border-radius:8px;">{% endif %}
+      <h3 style="margin:.5rem 0 0;">{{ b.title }}</h3>
+      <small>por {{ b.author.username }}</small>
+      <div><small>{{ b.get_status_display }}</small></div>
+    </a>
+  </article>
+  {% empty %}
+    <p>No hay libros aún.</p>
+  {% endfor %}
+</div>
+{% endblock %}

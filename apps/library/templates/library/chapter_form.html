@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}
+  {% if form.instance.id %}Editar: {{ form.instance.title|default:"Capítulo" }}
+  {% else %}Nuevo capítulo — {{ book.title }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<main>
+  <section class="sec-1-single-3 pb-70 overflow-hidden">
+    <!-- Banner / Migas -->
+    <div class="position-relative block-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8">
+
+            <nav aria-label="breadcrumb">
+              <ul class="breadcrumb list-unstyled d-flex flex-row gap-2 align-items-center m-0 ps-0 py-4">
+                <li class="breadcrumb-item">
+                  <a href="{% url 'library:home' %}" class="text-600 fs-7 hover-dark">Inicio</a>
+                </li>
+                <li class="breadcrumb-item">
+                  <span class="icon-shape icon-xxs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none"><path d="M6.125 4.5625L9.5625 7.84375L6.125 11.125" stroke="#626568" stroke-width="0.9375" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </li>
+                {% with the_book=book|default:form.instance.book %}
+                  <li class="breadcrumb-item">
+                    <a href="{% url 'library:book_detail' the_book.id %}" class="text-600 fs-7 hover-dark">{{ the_book.title }}</a>
+                  </li>
+                {% endwith %}
+                <li class="breadcrumb-item">
+                  <span class="icon-shape icon-xxs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none"><path d="M6.125 4.5625L9.5625 7.84375L6.125 11.125" stroke="#626568" stroke-width="0.9375" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </li>
+                <li class="breadcrumb-item active text-dark fs-7" aria-current="page">
+                  {% if form.instance.id %}Editar capítulo{% else %}Nuevo capítulo{% endif %}
+                </li>
+              </ul>
+            </nav>
+
+            <!-- Cabecera -->
+            <div class="card-title">
+              <div class="article card-info d-flex flex-wrap align-items-center gap-2 mt-2">
+                <span class="badge bg-1 fs-8">Editor</span>
+                <ul class="d-flex align-items-center text-600 m-0 ps-3">
+                  <li><p class="fs-8 m-0"><span id="wordCount">0</span> palabras hoy</p></li>
+                </ul>
+                <h3 class="mt-2 mb-0">
+                  {% if form.instance.id %}{{ form.instance.title|default:"Sin título" }}{% else %}Redacción de capítulo{% endif %}
+                </h3>
+              </div>
+              <div class="border-top"></div>
+
+              <!-- Barra objetivo -->
+              <div class="d-flex align-items-center gap-3 pt-4">
+                {% with goal=user.daily_word_goal|default:800 %}
+                  <div class="flex-grow-1">
+                    <div class="progress" style="height:10px;">
+                      <div id="goalBar" class="progress-bar" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small class="text-600">
+                      Objetivo diario: <strong id="goalText">{{ goal }}</strong> palabras ·
+                      Progreso: <strong id="goalPct">0%</strong>
+                      <span class="ms-2 text-muted" id="autosaveStatus">—</span>
+                    </small>
+                  </div>
+                  <span class="badge bg-200 text-dark fs-8">Racha <span id="streak">—</span></span>
+                {% endwith %}
+              </div>
+            </div>
+            <!-- /Cabecera -->
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="container mt-5">
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <form method="post" enctype="multipart/form-data" class="d-flex flex-column gap-3">
+            {% csrf_token %}
+
+            <!-- Errores -->
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row g-3">
+              <div class="col-4">
+                <label class="form-label"># de capítulo</label>
+                {{ form.number|add_class:"form-control" }}
+                {% for e in form.number.errors %}<div class="text-danger fs-8">{{ e }}</div>{% endfor %}
+              </div>
+              <div class="col-8">
+                <label class="form-label">Título</label>
+                {{ form.title|add_class:"form-control" }}
+                {% for e in form.title.errors %}<div class="text-danger fs-8">{{ e }}</div>{% endfor %}
+              </div>
+              <div class="col-6">
+                <label class="form-label">Estado</label>
+                {{ form.status|add_class:"form-select" }}
+                {% for e in form.status.errors %}<div class="text-danger fs-8">{{ e }}</div>{% endfor %}
+              </div>
+              <div class="col-md-6">
+                <label for="id_publish_at" class="form-label">Publicación (si programado)</label>
+                {{ form.publish_at }}
+                <div class="form-text">
+                  Elige fecha y hora para programar. Déjalo vacío para no programar.
+                </div>
+                {% for e in form.publish_at.errors %}
+                  <div class="text-danger fs-8">{{ e }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Editor (WYSIWYG usando el textarea 'content' del formulario) -->
+            <div>
+              <label class="form-label">Contenido</label>
+              {{ form.content|add_class:"form-control d-none" }}
+              <textarea id="editor" class="form-control" rows="20">{{ form.instance.content|default_if_none:"" }}</textarea>
+              {% for e in form.content.errors %}<div class="text-danger fs-8">{{ e }}</div>{% endfor %}
+            </div>
+
+            <!-- Acciones -->
+            <div class="d-flex flex-wrap gap-2 align-items-center border-top pt-4">
+              <button type="submit" class="btn btn-dark button-effect-1">Guardar cambios</button>
+
+              {% if form.instance.id %}
+                <button type="button" id="saveVersion" class="btn btn-dark button-effect-1">Guardar versión</button>
+                <button type="button" id="openRevisions" class="btn btn-dark button-effect-1">Ver revisiones</button>
+                <a class="btn btn-dark button-effect-1" href="{% url 'library:chapter_read' form.instance.id %}" target="_blank">Previsualizar</a>
+              {% endif %}
+
+              {% with the_book=book|default:form.instance.book %}
+                <a class="btn btn-dark button-effect-1" href="{% url 'library:book_detail' the_book.id %}">Volver al libro</a>
+              {% endwith %}
+
+              <div class="ms-auto">
+                <small class="text-muted">Autosave: <span id="autosaveWhen">—</span></small>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Lateral (ayudas) -->
+        <div class="col-lg-4">
+          <div class="border rounded-16 p-3 bg-50">
+            <h6 class="mb-2">Atajos útiles</h6>
+            <ul class="m-0 ps-3 text-600 fs-8">
+              <li><kbd>Ctrl</kbd> + <kbd>B</kbd>: Negrita</li>
+              <li><kbd>Ctrl</kbd> + <kbd>I</kbd>: Cursiva</li>
+              <li><kbd>Ctrl</kbd> + <kbd>K</kbd>: Enlace</li>
+              <li>“# Título”, “## Subtítulo”, “- lista”…</li>
+            </ul>
+            <div class="border-top my-3"></div>
+            <h6 class="mb-2">Consejo de estilo</h6>
+            <p class="m-0 fs-8">Mantén párrafos cortos, alterna ritmo y revisa repeticiones cercanas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- CKEditor 5 -->
+<script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+<script>
+function getCookie(name){
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+const csrfToken = getCookie('csrftoken');
+</script>
+
+<script>
+(function(){
+  const AUTOSAVE_MS = 1500;
+  const goal = parseInt(document.getElementById('goalText')?.textContent || '800', 10);
+const chapterId = {{ form.instance.id|default:"null" }};
+
+  {% if form.instance.id %}
+    const autosaveUrl = "{% url 'library:chapter_autosave' form.instance.id %}";
+    const revisionsUrl = "{% url 'library:chapter_revisions' form.instance.id %}";
+    const saveVersionUrl = "{% url 'library:chapter_save_version' form.instance.id %}";
+  {% else %}
+    const autosaveUrl = null;
+    const revisionsUrl = null;
+    const saveVersionUrl = null;
+  {% endif %}
+
+const uploadUrl = "{% url 'library:richtext_image_upload' %}";
+
+
+  const hiddenContent = document.getElementById('{{ form.content.id_for_label }}'); // d-none textarea
+  const editorTextarea = document.getElementById('editor');
+  const autosaveStatus = document.getElementById('autosaveStatus');
+  const autosaveWhen = document.getElementById('autosaveWhen');
+  const wordCountEl = document.getElementById('wordCount');
+  const goalBar = document.getElementById('goalBar');
+  const goalPct = document.getElementById('goalPct');
+
+  let editor, t;
+
+  function stripHtml(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html || '';
+    const text = (div.textContent || div.innerText || '').replace(/\s+/g,' ').trim();
+    return text;
+  }
+  function countWords(html){
+    const text = stripHtml(html);
+    if(!text) return 0;
+    return text.split(' ').filter(Boolean).length;
+  }
+  function updateWordUI(html){
+    const words = countWords(html);
+    if (wordCountEl) wordCountEl.textContent = words;
+    const pct = Math.max(0, Math.min(100, Math.round(100 * words / (goal || 800))));
+    if (goalBar) goalBar.style.width = pct + '%';
+    if (goalPct) goalPct.textContent = pct + '%';
+  }
+
+  function debouncedSave(){
+    clearTimeout(t);
+    t = setTimeout(doAutosave, AUTOSAVE_MS);
+  }
+  window.debouncedSave = debouncedSave; // por si lo quieres usar en más sitios
+
+  function doAutosave(){
+    if (!chapterId || !autosaveUrl) return; // autosave sólo en edición
+    const html = editor.getData();
+    const titleInput = document.getElementById('{{ form.title.id_for_label }}');
+    const payload = new FormData();
+    payload.append('title', (titleInput && titleInput.value) || '');
+    payload.append('content', html);           // guardamos html en content
+    payload.append('content_html', html);      // por si tienes ese campo en modelo
+
+    // fallback local
+    try{
+      localStorage.setItem(`draft:${chapterId}`, JSON.stringify({title: payload.get('title'), content: html, when: Date.now()}));
+    }catch(e){}
+
+    fetch(autosaveUrl, { method: 'POST', headers: {'X-CSRFToken': csrfToken}, body: payload })
+      .then(r => r.json())
+      .then(data => {
+        autosaveStatus.textContent = 'Guardado automático ✓';
+        autosaveWhen.textContent = new Date().toLocaleTimeString();
+      })
+      .catch(() => {
+        autosaveStatus.textContent = 'Sin conexión (guardado local) ⏳';
+      });
+  }
+
+  ClassicEditor.create(editorTextarea, {
+    toolbar: [
+      'heading','|','bold','italic','underline','strikethrough','link',
+      'bulletedList','numberedList','blockQuote','code','insertTable',
+      'imageUpload','mediaEmbed','undo','redo'
+    ],
+    simpleUpload: {
+      uploadUrl: uploadUrl,
+      withCredentials: true,
+      headers: { 'X-CSRFToken': csrfToken }
+    }
+  }).then(e => {
+    editor = e;
+    // Inicial: sincroniza el hidden (post real) y el contador
+    const html = editor.getData();
+    if (hiddenContent){ hiddenContent.value = html; }
+    updateWordUI(html);
+
+    editor.model.document.on('change:data', () => {
+      const html2 = editor.getData();
+      if (hiddenContent){ hiddenContent.value = html2; }
+      updateWordUI(html2);
+      debouncedSave();
+    });
+
+    // Restaurar borrador local si existe (sólo si editor está vacío)
+    if (chapterId){
+      const raw = localStorage.getItem(`draft:${chapterId}`);
+      if (raw){
+        try{
+          const draft = JSON.parse(raw);
+          if (draft && draft.content && stripHtml(html).length < 5){
+            editor.setData(draft.content);
+            const ti = document.getElementById('{{ form.title.id_for_label }}');
+            if (ti && draft.title) ti.value = draft.title;
+          }
+        }catch(e){}
+      }
+    }
+  });
+
+  // Botón “Guardar versión”
+  const btnSaveVersion = document.getElementById('saveVersion');
+  if (btnSaveVersion && saveVersionUrl){
+    btnSaveVersion.addEventListener('click', function(){
+      const payload = new FormData();
+      payload.append('title', document.getElementById('{{ form.title.id_for_label }}')?.value || '');
+      payload.append('content', editor.getData());
+      fetch(saveVersionUrl, { method:'POST', headers:{'X-CSRFToken': csrfToken}, body: payload })
+        .then(r => r.ok ? r.json().catch(()=>({})) : Promise.reject())
+        .then(() => { autosaveStatus.textContent = 'Versión guardada ✓'; })
+        .catch(() => { autosaveStatus.textContent = 'No se pudo guardar versión'; });
+    });
+  }
+
+  // Modal/listado revisiones simple (alert) — puedes reemplazar por modal bonito
+  const btnOpenRevs = document.getElementById('openRevisions');
+  if (btnOpenRevs && revisionsUrl){
+    btnOpenRevs.addEventListener('click', function(){
+      fetch(revisionsUrl, {headers:{'X-Requested-With':'fetch'}})
+        .then(r => r.json())
+        .then(data => {
+          if (!data.revisions || !data.revisions.length){ alert('Sin revisiones.'); return; }
+          const lines = data.revisions.map(r => `#${r.id} — ${r.created_at} — ${r.user} ${r.autosave ? '(auto)' : ''}`).join('\n');
+          const id = prompt(`Revisiones disponibles:\n\n${lines}\n\nEscribe el ID a restaurar:`);
+          const rid = parseInt(id,10);
+          if (rid){
+            fetch(`${revisionsUrl.replace(/\/$/, '')}/${rid}/restore/`, {method:'POST', headers:{'X-CSRFToken': csrfToken}})
+              .then(rr => rr.json())
+              .then(() => location.reload());
+          }
+        });
+    });
+  }
+})();
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const el = document.getElementById("id_publish_at");
+  if (!el) return;
+  // Si el navegador no muestra date-time nativo, aplicamos Flatpickr
+  // o, si quieres forzarlo siempre, quita la condición.
+  try {
+    flatpickr(el, {
+      enableTime: true,
+      time_24hr: true,
+      altInput: true,
+      altFormat: "d M Y H:i",
+      dateFormat: "Y-m-d\\TH:i",
+      allowInput: true
+    });
+  } catch(e) {}
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,422 @@
+{% extends "base.html" %}
+{% load static humanize %}
+{% block title %}{{ chapter.title }} — {{ chapter.book.title }}{% endblock %}
+
+{% block content %}
+<main>
+  <!-- Single 3 Section -->
+  <section class="sec-1-single-3 pb-70 overflow-hidden">
+
+    <!-- Banner / Breadcrumb / Title & Meta -->
+    <div class="position-relative block-banner">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+              <ul class="breadcrumb list-unstyled d-flex flex-row gap-2 align-items-center m-0 ps-0 py-4">
+                <li class="breadcrumb-item">
+                  <a href="{% url 'library:home' %}" class="text-600 fs-7 hover-dark">Inicio</a>
+                </li>
+                <li class="breadcrumb-item">
+                  <span class="icon-shape icon-xxs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none"><path d="M6.125 4.5625L9.5625 7.84375L6.125 11.125" stroke="#626568" stroke-width="0.9375" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </li>
+                <li class="breadcrumb-item">
+                  <a href="{% url 'library:book_detail' chapter.book.id %}" class="text-600 fs-7 hover-dark">{{ chapter.book.title }}</a>
+                </li>
+                <li class="breadcrumb-item">
+                  <span class="icon-shape icon-xxs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none"><path d="M6.125 4.5625L9.5625 7.84375L6.125 11.125" stroke="#626568" stroke-width="0.9375" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </li>
+                <li class="breadcrumb-item active text-dark fs-7" aria-current="page">
+                  Capítulo {{ chapter.number|default:"" }}
+                </li>
+              </ul>
+            </nav>
+
+            <div class="card-title">
+              <div class="article card-info d-flex flex-wrap align-items-center gap-2 mt-2">
+                {% if chapter.book.category %}
+                  <a href="{% url 'library:discover' %}?cat={{ chapter.book.category.id }}" class="badge bg-1 fs-8">{{ chapter.book.category.name }}</a>
+                {% endif %}
+                {% if chapter.is_free or not chapter.book.is_paid %}
+                  <span class="badge bg-success-subtle text-success-emphasis fs-8">Gratis</span>
+                {% else %}
+                  <span class="badge bg-dark text-white fs-8">De pago</span>
+                {% endif %}
+                <ul class="d-flex align-items-center text-600 m-0 ps-3">
+                  <li><p class="fs-8 m-0">
+                    {% if read_time %}{{ read_time }} mins read{% else %}{{ chapter.read_time|default:6 }} mins read{% endif %}
+                  </p></li>
+                </ul>
+                <h3 class="mt-2 mb-0">
+                  {{ chapter.title }}
+                  {% if chapter.subtitle %}<span class="fs-6 text-600 d-block">{{ chapter.subtitle }}</span>{% endif %}
+                </h3>
+              </div>
+
+              <div class="border-top"></div>
+
+              <div class="bottom mt-auto d-flex flex-wrap align-items-center gap-2 pt-4">
+                <a href="{% url 'accounts:profile' %}" class="author d-flex align-items-center gap-2">
+                  {% if chapter.book.author.avatar %}
+                    <img class="avatar avatar-md rounded-circle" src="{{ chapter.book.author.avatar.url }}" alt="{{ chapter.book.author.username }}">
+                  {% else %}
+                    <span class="avatar avatar-md rounded-circle bg-200 d-inline-flex align-items-center justify-content-center">👤</span>
+                  {% endif %}
+                  <span class="fs-7 text-dark fw-regular">{{ chapter.book.author.username }}</span>
+                </a>
+                <ul class="d-flex align-items-center gap-4 text-600 m-0 ps-3">
+                  <li>
+                    <p class="fs-8 m-0">
+                      {{ chapter.published_at|default:chapter.updated_at|date:"d M, Y" }}
+                    </p>
+                  </li>
+                </ul>
+
+                <div class="ms-md-auto ms-5 d-flex align-items-center gap-3 me-5">
+                  <span class="comment d-flex align-items-center fs-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.5 5.434C2.5 4.27 3.445 3.326 4.61 3.326H15.39c1.166 0 2.11.944 2.11 2.108v7.674a2.108 2.108 0 0 1-2.11 2.108H6.33l-2.91 2.162a.5.5 0 0 1-.86-.461V5.434Z" fill="#626568"/></svg>
+                    <span><span class="odometer text-nowrap" data-count="{{ comments_count|default:0 }}"></span> comentarios</span>
+                  </span>
+                  <span class="readers d-flex align-items-center fs-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.186 10.322C15.734 13.039 12.98 14.727 10 14.727S4.266 13.039 2.814 10.322a.75.75 0 0 1 0-.645C4.266 6.96 7.02 5.274 10 5.274s5.734 1.687 7.186 4.403a.75.75 0 0 1 0 .645ZM10 12.271A2.27 2.27 0 1 0 10 7.73a2.27 2.27 0 0 0 0 4.54Z" fill="#626568"/></svg>
+<span class="odometer text-nowrap" data-count="{{ views_count|default:0 }}"></span> vistas
+                  </span>
+
+                  {% if can_curate %}
+                    <a class="btn btn-dark btn-sm button-effect-1" href="{% url 'library:chapter_edit' chapter.id %}">✏️ Editar</a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Body -->
+    <div class="container">
+      <div class="row mt-5 g-4">
+        <!-- Content -->
+        <div class="col-lg-8">
+
+          {% if chapter.header_image %}
+            <img class="rounded-8 w-100 mb-4" src="{{ chapter.header_image.url }}" alt="{{ chapter.title }}">
+          {% elif chapter.book.cover %}
+            <img class="rounded-8 w-100 mb-4" src="{{ chapter.book.cover.url }}" alt="{{ chapter.book.title }}">
+          {% endif %}
+
+          <!-- Contenido del capítulo -->
+          <article class="d-flex flex-column gap-3">
+            {% if chapter.excerpt %}
+              <p class="text-dark fs-6">{{ chapter.excerpt }}</p>
+            {% endif %}
+
+            <div class="chapter-content text-dark">
+              {% if chapter.content_html %}
+                {{ chapter.content_html|safe }}
+              {% else %}
+                {{ chapter.content|safe }}
+              {% endif %}
+            </div>
+
+            {% if chapter.footer_image %}
+              <img class="rounded-8 my-4 overflow-hidden" src="{{ chapter.footer_image.url }}" alt="{{ chapter.title }}">
+            {% endif %}
+
+            <!-- Tags + Share -->
+            <div class="border-top mt-5 mb-1"></div>
+            <div class="d-flex flex-wrap gap-4 align-items-center justify-content-between mb-4">
+              {% if chapter.tags.all %}
+                <div class="d-flex align-items-center gap-2">
+                  {% for t in chapter.tags.all %}
+                    <a href="{% url 'library:discover' %}?tag={{ t.slug }}" class="tag-item">
+                      <span>{{ t.name }}</span>
+                    </a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="d-flex align-items-center gap-2">
+                <span class="text-dark">Compartir:</span>
+                <div class="d-inline-flex group-social-icons mt-0 rounded-8">
+                  <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" rel="noopener" class="icon-shape icon-46">f</a>
+                  <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ chapter.title|urlencode }}" target="_blank" rel="noopener" class="icon-shape icon-46">X</a>
+                  <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri }}&title={{ chapter.title|urlencode }}" target="_blank" rel="noopener" class="icon-shape icon-46">in</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Acciones de lectura / navegación -->
+            <div class="d-flex flex-wrap gap-2 align-items-center border-top pt-4">
+              {% if can_subscribe %}
+                <form method="post" action="{% url 'library:subscribe_book' chapter.book.id %}">
+                  {% csrf_token %}
+                  <button class="btn btn-dark btn-sm button-effect-1">
+                    {% if is_subscribed %}Dejar de seguir{% else %}Seguir libro{% endif %}
+                  </button>
+                </form>
+              {% endif %}
+
+              {% if can_shelve %}
+                <form method="post" action="{% url 'library:shelf_set_status' chapter.book.id 'reading' %}">
+                  {% csrf_token %}
+                  <button class="btn btn-outline-dark btn-sm">Añadir a estantería</button>
+                </form>
+              {% endif %}
+
+              <div class="ms-auto d-flex gap-2">
+                {% if prev_chapter %}
+                  <a class="btn btn-outline-dark btn-sm" href="{% url 'library:chapter_read' prev_chapter.id %}">← Anterior</a>
+                {% endif %}
+                {% if next_chapter %}
+                  <a class="btn btn-dark btn-sm button-effect-1" href="{% url 'library:chapter_read' next_chapter.id %}">Siguiente →</a>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- ===== Comentarios ===== -->
+
+            <!-- Formulario crear comentario -->
+            <h4 class="mt-5 mb-2 pb-4 pt-3">Deja un comentario</h4>
+            {% if request.user.is_authenticated %}
+              <form method="post" action="{% url 'library:chapter_comment_create' chapter.id %}" class="row g-3 border-top pt-3 wow img-custom-anim-top">
+                {% csrf_token %}
+                <div class="col-12">
+                  <div class="input-group d-flex">
+                    <div class="icon-input pt-2 ps-3 align-items-start border border-end-0 rounded-1 rounded-end-0">
+                      <svg class="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none">
+                        <path d="M5.5 2.15H3C1.9 2.15 1 3.04 1 4.15v10.5c0 1.1.9 2 2 2h10.5c1.1 0 2-.9 2-2V12.15" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17.33 1.2l-.88-.88a1 1 0 0 0-1.41 0L7.83 7.39c-.06.06-.11.15-.13.24l-.44 2.21c-.03.15.05.31.16.43.09.09.21.15.34.15.03 0 .06 0 .09-.01l2.21-.44c.09-.02.18-.07.24-.13l7.07-7.07a1 1 0 0 0 0-1.41Z" fill="black"/>
+                      </svg>
+                    </div>
+                    <textarea class="form-control" name="text" placeholder="Tu mensaje..." rows="3" required></textarea>
+                  </div>
+                </div>
+                {% if can_curate %}
+                  <div class="col-12 d-flex align-items-center gap-2">
+                    <input type="checkbox" id="is_quote" name="is_quote">
+                    <label for="is_quote" class="m-0">Marcar como cita destacada</label>
+                  </div>
+                {% endif %}
+                <div class="col-12">
+                  <button type="submit" class="btn btn-dark rounded-8 gap-2 button-effect-1">
+                    Publicar comentario
+                    <svg class="dark-mode-invert ms-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                      <path d="M21.106 12.256H.5v-.512h20.606H22.313l-.854-.854L17.056 6.487l.362-.362 5.875 5.875-5.875 5.875-.362-.362 4.403-4.404.854-.854H21.106Z" stroke="white"/>
+                    </svg>
+                  </button>
+                </div>
+              </form>
+            {% else %}
+              <div class="alert alert-light border mt-3">Inicia sesión para comentar.</div>
+            {% endif %}
+
+            <!-- Listado de comentarios (con respuestas) -->
+            {% if comments %}
+              <h4 class="mt-5 mb-2 pt-3 wow img-custom-anim-top">Comentarios</h4>
+
+              {% for c in comments %}
+                <div class="d-flex flex-wrap flex-lg-nowrap gap-4 align-items-start pt-4 border-top wow img-custom-anim-top">
+                  {% if c.user.avatar %}
+                    <img class="rounded-16 avatar-xl" src="{{ c.user.avatar.url }}" alt="{{ c.user.username }}">
+                  {% else %}
+                    <span class="rounded-16 avatar-xl bg-200 d-inline-flex align-items-center justify-content-center">💬</span>
+                  {% endif %}
+                  <div class="w-100">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                      <h6 class="mb-0 fs-6 text-900">{{ c.user.username }}</h6>
+                      <span class="mb-0 fs-6 text-500">{{ c.created_at|date:"d M, Y" }}</span>
+                      {% if c.is_quote %}
+                        <span class="badge bg-200 text-dark ms-2">Cita</span>
+                      {% endif %}
+                    </div>
+                    <p class="py-3 m-0 text-500">{{ c.text }}</p>
+
+                    {% if request.user.is_authenticated %}
+                      <a href="#reply-{{ c.id }}" class="d-inline-flex text-600 hover-dark" onclick="event.preventDefault();var f=document.getElementById('reply-form-{{ c.id }}'); if(f) f.classList.toggle('d-none');">
+                        <span class="bg-200 fs-8 rounded-8 py-2 px-3">Responder</span>
+                      </a>
+                      <form id="reply-form-{{ c.id }}" class="mt-3 d-none" method="post" action="{% url 'library:comment_reply' c.id %}">
+                        {% csrf_token %}
+                        <div class="input-group d-flex">
+                          <div class="icon-input pt-2 ps-3 align-items-start border border-end-0 rounded-1 rounded-end-0">
+                            <svg class="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none">
+                              <path d="M5.5 2.15H3C1.9 2.15 1 3.04 1 4.15v10.5c0 1.1.9 2 2 2h10.5c1.1 0 2-.9 2-2V12.15" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                              <path d="M17.33 1.2l-.88-.88a1 1 0 0 0-1.41 0L7.83 7.39c-.06.06-.11.15-.13.24l-.44 2.21c-.03.15.05.31.16.43.09.09.21.15.34.15.03 0 .06 0 .09-.01l2.21-.44c.09-.02.18-.07.24-.13l7.07-7.07a1 1 0 0 0 0-1.41Z" fill="black"/>
+                            </svg>
+                          </div>
+                          <textarea class="form-control" name="text" rows="2" placeholder="Tu respuesta..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-outline-dark btn-sm mt-2">Enviar respuesta</button>
+                      </form>
+                    {% endif %}
+
+                    {% if c.children %}
+                      <div class="ms-5 ps-4 mt-4">
+                        {% for r in c.children %}
+                          <div class="d-flex flex-wrap flex-lg-nowrap gap-4 align-items-start pt-4 border-top">
+                            {% if r.user.avatar %}
+                              <img class="rounded-16 avatar-xl" src="{{ r.user.avatar.url }}" alt="{{ r.user.username }}">
+                            {% else %}
+                              <span class="rounded-16 avatar-xl bg-200 d-inline-flex align-items-center justify-content-center">💬</span>
+                            {% endif %}
+                            <div>
+                              <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <h6 class="mb-0 fs-6 text-900">{{ r.user.username }}</h6>
+                                <span class="mb-0 fs-6 text-500">{{ r.created_at|date:"d M, Y" }}</span>
+                                {% if r.is_quote %}
+                                  <span class="badge bg-200 text-dark ms-2">Cita</span>
+                                {% endif %}
+                              </div>
+                              <p class="py-3 m-0 text-500">{{ r.text }}</p>
+                            </div>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+            <!-- ===== /Comentarios ===== -->
+
+          </article>
+        </div>
+        <!-- /Content -->
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <div class="row">
+            <div class="col-md-6 col-lg-12 col-12">
+              <div class="author-card">
+                <div class="card-img mb-4 text-center">
+                  {% if chapter.book.author.avatar %}
+                    <img class="rounded-circle avatar-154" src="{{ chapter.book.author.avatar.url }}" alt="{{ chapter.book.author.username }}">
+                  {% else %}
+                    <span class="rounded-circle avatar-154 bg-200 d-inline-flex align-items-center justify-content-center fs-2">👤</span>
+                  {% endif %}
+                </div>
+                <div class="card-body text-center">
+                  <h5 class="mb-3">{{ chapter.book.author.username }}</h5>
+                  {% if chapter.book.author.bio %}
+                    <p class="mb-4">{{ chapter.book.author.bio|truncatechars:160 }}</p>
+                  {% endif %}
+                  <p class="text-dark mb-0">Sígueme</p>
+                  <div class="d-inline-flex group-social-icons mt-2">
+                    {% if chapter.book.author.social_x %}<a href="{{ chapter.book.author.social_x }}" class="icon-shape icon-46">X</a>{% endif %}
+                    {% if chapter.book.author.social_linkedin %}<a href="{{ chapter.book.author.social_linkedin }}" class="icon-shape icon-46">in</a>{% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {% if related_chapters %}
+              <div class="col-md-6 col-lg-12 col-12">
+                <div class="d-flex align-items-center gap-2 mt-5 mb-3">
+                  <svg class="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"><path d="M.582 11.728C8.795 13.471 10.252 14.861 12.125 22.737 13.807 14.877 15.231 13.499 23.402 11.828 15.189 10.085 13.732 8.695 11.859.819 10.177 8.68 8.753 10.057.582 11.728Z" fill="#0E0E0F"/></svg>
+                  <h5 class="mb-0">Recomendados</h5>
+                </div>
+                <div class="d-flex flex-column gap-3">
+                  {% for rc in related_chapters|slice:":4" %}
+                    <div class="article card-10 style-2 hover-up">
+                      <div class="hover-effect-1">
+                        <a href="{% url 'library:chapter_read' rc.id %}" class="card-img">
+                          {% if rc.header_image %}
+                            <img class="w-100" src="{{ rc.header_image.url }}" alt="{{ rc.title }}">
+                          {% elif rc.book.cover %}
+                            <img class="w-100" src="{{ rc.book.cover.url }}" alt="{{ rc.book.title }}">
+                          {% else %}
+                            <img class="w-100" src="{% static 'magzin/assets/imgs/other/img-other-1.png' %}" alt="">
+                          {% endif %}
+                        </a>
+                      </div>
+                      <div class="card-body">
+                        <a href="{% url 'library:chapter_read' rc.id %}"><h6 class="fs-7 mb-2 text-truncate-2">{{ rc.title }}</h6></a>
+                        <div class="d-flex align-items-center text-600">
+                          <span class="fs-8">{{ rc.published_at|default:rc.updated_at|date:"d M, Y" }}</span>
+                          <ul class="ps-4 m-0"><li><span class="fs-8">{{ rc.read_time|default:6 }} mins read</span></li></ul>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            {% if popular_tags %}
+              <div class="col-md-6 col-lg-12 col-12">
+                <div class="d-flex align-items-center gap-2 mt-5 mb-3">
+                  <svg class="dark-mode-invert" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"><path d="M.582 11.728C8.795 13.471 10.252 14.861 12.125 22.737 13.807 14.877 15.231 13.499 23.402 11.828 15.189 10.085 13.732 8.695 11.859.819 10.177 8.68 8.753 10.057.582 11.728Z" fill="#0E0E0F"/></svg>
+                  <h5 class="mb-0">Tags populares</h5>
+                </div>
+                <ul class="list-unstyled d-flex flex-wrap gap-3 ps-0">
+                  {% for t in popular_tags %}
+                    <li>
+                      <a href="{% url 'library:discover' %}?tag={{ t.slug }}" class="tag-item link-effect-2">
+                        <span class="text">
+                          <span class="text1">{{ t.name }}</span>
+                          <span class="text2">{{ t.name }}</span>
+                        </span>
+                        {% if t.count %}
+                          <span class="number"><span class="odometer text-nowrap" data-count="{{ t.count }}"></span></span>
+                        {% endif %}
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+
+          </div>
+        </div>
+        <!-- /Sidebar -->
+      </div>
+    </div>
+  </section>
+
+  {% if related_books %}
+  <section class="related-post sec-padding bg-white">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-12"><h5 class="mb-0">También te puede gustar</h5></div>
+        {% for b in related_books|slice:":4" %}
+          <div class="col-md-6 col-lg-3">
+            <div class="article card-5">
+              <div class="post-link">
+                <div class="hover-effect-1">
+                  <div class="position-relative card-img-top thumbnail">
+                    <a href="{% url 'library:book_detail' b.id %}">
+                      {% if b.cover %}<img src="{{ b.cover.url }}" alt="{{ b.title }}" class="cover-image">
+                      {% else %}<img src="{% static 'magzin/assets/imgs/other/img-other-9.png' %}" alt="" class="cover-image">
+                      {% endif %}
+                    </a>
+                    {% if b.category %}
+                      <a href="{% url 'library:discover' %}?cat={{ b.category.id }}" class="badge bg-1 fs-8">{{ b.category.name }}</a>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="card-corner white no-border">
+                  <a href="{% url 'library:book_detail' b.id %}" class="arrow-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"><path d="M13.75 6.75L19.25 12L13.75 17.25" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 12H4.75" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </a>
+                  <div class="curve-one"></div><div class="curve-two"></div>
+                </div>
+              </div>
+              <div class="card-body mt-4">
+                <a href="{% url 'library:book_detail' b.id %}" class="hover-underline">
+                  <h6 class="card-title mb-0">{{ b.title }}</h6>
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+</main>
+{% endblock %}

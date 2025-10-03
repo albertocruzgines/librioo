@@ -1,0 +1,317 @@
+{% extends 'base.html' %} 
+{% load money %}
+{% block title %}{{ object.title }} — Librioo{% endblock %}
+{% block content %}
+
+<style>
+  .hero { display:grid; grid-template-columns: 260px 1fr; gap:2rem; align-items:start; }
+  .cover { width:240px; height:340px; object-fit:cover; border-radius:12px; box-shadow: 0 10px 20px rgba(0,0,0,.15); background:#f7f7f7; }
+  .badge { display:inline-block; padding:.15rem .5rem; border-radius:999px; background:#f1f5f9; border:1px solid #e5e7eb; font-size:.8rem; margin-right:.5rem; color:#111; }
+  .actions form { display:inline-block; margin:.25rem .25rem .25rem 0; }
+  .metrics { display:flex; gap:.6rem; flex-wrap:wrap; margin:.5rem 0 1rem 0; }
+  .metrics .m { background:#fff; border:1px solid #e5e7eb; border-radius:999px; padding:.25rem .6rem; font-size:.85rem; }
+  .shelf::before { content:""; display:block; height:12px; background: linear-gradient(#c9a77b, #9d7d52); border-radius:8px; box-shadow: inset 0 2px 0 rgba(255,255,255,.4), 0 4px 10px rgba(0,0,0,.2); }
+  .spines { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap:1rem; margin-top:1rem; }
+  .spine { background: linear-gradient(180deg, #fafafa, #f0f0f0); border:1px solid #e6e6e6; border-radius:10px; padding:1rem; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+  .reviews, .quotes { margin-top:2rem; }
+  .review, .quote { border:1px solid #eee; border-radius:10px; padding:1rem; margin:.5rem 0; background:#fff; }
+  .muted { opacity:.75; font-size:.9rem; }
+  details > summary { cursor:pointer; user-select:none; }
+  @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
+</style>
+{% load static %}
+<link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/bootstrap-grid.min.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/swiper-bundle.min.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/magnific-popup.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/aos.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/odometer.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/main.css' %}">
+<style>
+  .avatar{ width:56px; height:56px; border-radius:999px; object-fit:cover; background:#f4f4f5; }
+  .initial-avatar{
+    width:56px; height:56px; border-radius:999px;
+    display:flex; align-items:center; justify-content:center;
+    background:#e5e7eb; color:#374151; font-weight:800;
+  }
+</style>
+
+<style>
+  :root{ --cover-w:140px; } /* cambia el tamaño de portada si quieres */
+
+  /* --- Layouts reutilizables --- */
+  .section{ margin: 1.25rem 0 2rem 0; }
+  .section h2{ margin:0 0 .3rem 0; }
+  .muted{ color:#6b7280; }
+
+  .book-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(360px, 1fr));
+    gap:1rem;
+  }
+
+  .scroll-row{
+    display:flex; gap:1rem; overflow:auto; padding: .25rem 0 .5rem;
+    scroll-snap-type: x mandatory;
+  }
+  .scroll-row > *{ scroll-snap-align:start; flex:0 0 360px; }
+
+  /* --- Tarjeta de libro 2:3 (igual que en el parcial) --- */
+  .book-card{
+    display:flex; gap:1rem; align-items:flex-start;
+    background:#fff; border:1px solid #e5e7eb; border-radius:16px;
+    padding:.9rem; box-shadow:0 8px 18px rgba(0,0,0,.06);
+    transition:transform .12s ease, box-shadow .12s ease;
+    text-decoration:none; color:inherit;
+  }
+  .book-card:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,0,0,.08); }
+
+  .cover-2x3{
+    width:var(--cover-w);
+    aspect-ratio:2/3;
+    background:#f5f5f5;
+    border-radius:12px; overflow:hidden;
+    box-shadow:0 6px 14px rgba(0,0,0,.12);
+    flex-shrink:0; position:relative;
+  }
+  .cover-2x3 img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .cover-2x3 .ph{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:#9ca3af;
+  }
+  .book-body{ flex:1; display:flex; flex-direction:column; gap:.35rem; min-width:0; }
+  .book-title{ margin:0; font-weight:800; line-height:1.15; }
+  .book-author{ color:#6b7280; font-size:.9rem; text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
+  .book-desc{ color:#4b5563; font-size:.92rem; margin-top:.15rem; }
+  .book-meta{ display:flex; gap:.55rem; flex-wrap:wrap; align-items:center; margin-top:.3rem; color:#374151; font-size:.9rem; }
+
+  .badge{ display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .55rem; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb; font-size:.78rem; }
+  .badge-serial{ background:#e0f2fe; color:#075985; border-color:#bae6fd; }
+  .badge-closed{ background:#dcfce7; color:#065f46; border-color:#bbf7d0; }
+  .badge-draft{ background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+  .badge-free{ background:#dcfce7; color:#065f46; border-color:#bbf7d0; }
+  .badge-paid{ background:#fef3c7; color:#92400e; border-color:#fde68a; }
+  .price{ font-weight:700; }
+
+  /* Chips / listas auxiliares */
+  .chips{ display:flex; gap:.5rem; flex-wrap:wrap; }
+  .chip{ padding:.35rem .6rem; border:1px solid #e5e7eb; border-radius:999px; background:#fff; font-size:.85rem; }
+  .author-card{
+    border:1px solid #e5e7eb; border-radius:16px; padding:1rem; background:#fff;
+  }
+  .poll-card{
+    border:1px solid #e5e7eb; border-radius:12px; padding:1rem; background:#fff;
+  }
+  .review{
+    border:1px solid #e5e7eb; border-radius:12px; padding:1rem; background:#fff;
+  }
+</style>
+<section class="sec-1-home-1" data-background="{% static 'magzin/assets/imgs/page/bg-home1-sec1.png' %}">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h1 class="ds-2 lh-0 mb-0 text-anime-style-2">{{ object.title }}</h1>
+                            <p class="fs-5 mt-0 text-anime-style-1">Una historia de {% if object.category %}<span class="">{{ object.category.name }}</span>{% endif %} por <strong>{{ object.author.username }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                    <div class="container-fluid container">
+  <article class="book-detail">
+    <div class="hero">
+      <div>
+        {% if object.cover %}
+          <img class="cover" src="{{ object.cover.url }}" alt="{{ object.title }}">
+        {% else %}
+          <div class="cover" style="display:flex;align-items:center;justify-content:center;font-weight:700;">Sin portada</div>
+        {% endif %}
+      </div>
+
+      <div>
+        <p>
+          <span class="badge">{{ object.get_status_display }}</span>
+      
+          {% if object.subcategory %}<span class="badge">{{ object.subcategory.name }}</span>{% endif %}
+          {% for tag in object.tags.all %}<span class="badge">#{{ tag.name|default:tag }}</span>{% endfor %}
+          {% if object.is_paid %}
+            {% if object.price_cents %}
+              <span class="badge" style="background:#fef3c7; border-color:#f59e0b;">De pago · € {{ object.price_cents|eur }}</span>
+            {% else %}
+              <span class="badge" style="background:#fef3c7; border-color:#f59e0b;">De pago</span>
+            {% endif %}
+          {% else %}
+            <span class="badge" style="background:#dcfce7; border-color:#22c55e;">Gratis</span>
+          {% endif %}
+        </p>
+
+        <div class="metrics">
+          <span class="m">📚 {{ total_chapters }} cap.</span>
+          {% if new_chapters_count and new_chapters_count > 0 %}
+            <span class="m">🆕 {{ new_chapters_count }} esta semana</span>
+          {% endif %}
+          <span class="m">👥 {{ followers }} seguidores</span>
+          <span class="m">❤ {{ favorites }} favoritos</span>
+        </div>
+
+        <p class="muted">Última actualización: {{ object.updated_at|date:"d M Y, H:i" }}</p>
+        <p>{{ object.synopsis }}</p>
+
+        <div class="actions">
+          {% if user.is_authenticated %}
+            {% if subscribed %}
+              <form method="post" action="{% url 'library:subscribe_book' object.id %}">{% csrf_token %}<button>Dejar de seguir</button></form>
+            {% else %}
+              <form method="post" action="{% url 'library:subscribe_book' object.id %}">{% csrf_token %}<button>Seguir libro</button></form>
+            {% endif %}
+
+            {% if shelf_item %}
+              <span class="badge">En tu estantería: {{ shelf_item.get_status_display }}</span>
+            {% else %}
+              <span class="badge">No está en tu estantería</span>
+            {% endif %}
+            <form method="post" action="{% url 'library:shelf_set_status' object.id 'favorite' %}">{% csrf_token %}<button>❤ Favorito</button></form>
+            <form method="post" action="{% url 'library:shelf_set_status' object.id 'pending' %}">{% csrf_token %}<button>Pendiente</button></form>
+            <form method="post" action="{% url 'library:shelf_set_status' object.id 'reading' %}">{% csrf_token %}<button>Leyendo</button></form>
+          {% else %}
+            <a href="/accounts/login/">Inicia sesión</a> para seguir y organizar en tu estantería.
+          {% endif %}
+
+          {% if object.is_paid and object.price_cents %}
+            <form method="post" action="{% url 'payments:checkout_book' object.id %}" style="margin-left:.5rem">{% csrf_token %}
+              <button>Comprar libro ({{ object.price_cents|eur }} €)</button>
+            </form>
+          {% endif %}
+
+          {% if user.is_authenticated %}
+            {% if user.is_superuser or user == object.author %}
+              <div style="margin-top:.5rem;">
+                <a href="{% url 'library:book_edit' object.id %}">✏️ Editar libro</a> ·
+                <a href="{% url 'library:chapter_create' object.id %}">➕ Nuevo capítulo</a>
+              </div>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        {% if object.prologue %}
+          <details style="margin-top:1rem;">
+            <summary><strong>Prólogo</strong></summary>
+            <div style="white-space:pre-wrap; margin-top:.5rem;">{{ object.prologue }}</div>
+          </details>
+        {% endif %}
+        {% if object.author_notes %}
+          <details style="margin-top:.5rem;">
+            <summary><strong>Notas del autor</strong></summary>
+            <div style="white-space:pre-wrap; margin-top:.5rem;">{{ object.author_notes }}</div>
+          </details>
+        {% endif %}
+      </div>
+    </div>
+
+    <section class="shelf" style="margin-top:2rem;">
+      <h2 style="margin:1.25rem 0 .5rem 0;">Capítulos</h2>
+      <div class="spines">
+        {% for ch in chapters %}
+          <div class="spine">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <strong>{{ ch.number }}. {{ ch.title }}</strong>
+              {% if user.is_authenticated %}
+                {% if user.is_superuser or user == object.author %}
+                  <a href="{% url 'library:chapter_edit' ch.id %}" style="font-size:.9rem;">Editar</a>
+                {% endif %}
+              {% endif %}
+            </div>
+
+            <small class="muted">
+              {% if ch.status == 'published' %}
+                Publicado{% if ch.publish_at %} · {{ ch.publish_at|date:"d M Y, H:i" }}{% endif %}
+                {% if ch.publish_at and ch.publish_at >= week_ago and ch.publish_at <= now %}
+                  <span class="badge" style="background:#dcfce7; border-color:#22c55e; margin-left:.4rem;">🆕 Nuevo</span>
+                {% endif %}
+              {% elif ch.status == 'scheduled' %}
+                Programado{% if ch.publish_at %} · {{ ch.publish_at|date:"d M Y, H:i" }}{% endif %}
+              {% else %}
+                Borrador
+              {% endif %}
+            </small>
+
+            <div style="margin-top:.5rem;">
+              {% if ch.status == 'published' %}
+                <a href="{% url 'library:chapter_read' ch.id %}">Leer capítulo</a>
+              {% else %}
+                <span class="muted">No publicado</span>
+              {% endif %}
+            </div>
+          </div>
+        {% empty %}
+          <div class="spine"><em>No hay capítulos todavía.</em></div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="reviews">
+      <h2>Reseñas de lectores</h2>
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'library:book_review_create' object.id %}">
+          {% csrf_token %}
+          <textarea name="text" rows="3" style="width:100%;" placeholder="Escribe tu reseña corta..."></textarea>
+          <button style="margin-top:.5rem;">Publicar reseña</button>
+        </form>
+      {% else %}
+        <p class="muted"><a href="/accounts/login/">Inicia sesión</a> para escribir una reseña.</p>
+      {% endif %}
+
+      {% for r in reviews %}
+        <div class="review">
+          <strong>{{ r.user.username }}</strong> <span class="muted">· {{ r.created_at|date:"d M Y, H:i" }}</span>
+          <p style="margin:.5rem 0 0 0;">{{ r.text }}</p>
+          <div class="muted" style="margin-top:.5rem;">
+            <a href="{% url 'library:react_toggle' 'comment' r.id 'like' %}">👍 Me gusta</a>
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'library:comment_reply' r.id %}" style="display:inline; margin-left:.5rem;">
+                {% csrf_token %}
+                <input type="text" name="text" placeholder="Responder...">
+                <button>Responder</button>
+              </form>
+            {% endif %}
+          </div>
+          {% if r.replies.all %}
+            <ul style="margin-top:.5rem;">
+              {% for rr in r.replies.all %}
+                <li><strong>{{ rr.user.username }}</strong>: {{ rr.text }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      {% empty %}
+        <p class="muted">Aún no hay reseñas. ¡Sé el primero!</p>
+      {% endfor %}
+    </section>
+
+    <section class="quotes">
+      <h2>Citas destacadas</h2>
+      {% for q in quotes %}
+        <div class="quote">
+          <p style="margin:0;">“{{ q.text }}”</p>
+          <small class="muted">— {{ q.user.username }} · {{ q.created_at|date:"d M Y, H:i" }}</small>
+          <div style="margin-top:.25rem;">
+            <a href="{% url 'library:react_toggle' 'comment' q.id 'like' %}">👍 Me gusta</a>
+            {% if user.is_authenticated %}
+              {% if user.is_superuser or user == object.author %}
+                <form method="post" action="{% url 'library:comment_toggle_quote' q.id %}" style="display:inline">
+                  {% csrf_token %}
+                  <button type="submit">{% if q.is_quote %}Quitar cita{% else %}Marcar como cita{% endif %}</button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <p class="muted">Aún no hay citas. El autor puede marcarlas desde los comentarios del capítulo.</p>
+      {% endfor %}
+    </section>
+
+  </article>
+</div>
+</section>
+{% endblock %}

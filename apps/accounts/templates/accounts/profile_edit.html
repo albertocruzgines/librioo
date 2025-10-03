@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Editar perfil{% endblock %}
+{% block content %}
+<h1>Editar perfil</h1>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <p><small>Consejo: marca <em>Escritor</em> si quieres acceder al panel de autor.</small></p>
+  <button>Guardar</button>
+</form>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Clubs</h1>
+<ul>
+  {% for c in object_list %}
+    <li>
+      <strong>{{ c.name }}</strong> — {{ c.description }}
+      <form method="post" action="{% url 'community:club_toggle' c.id %}">{% csrf_token %}<button>Unirme/Salir</button></form>
+    </li>
+  {% empty %}
+    <li>No hay clubs aún.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

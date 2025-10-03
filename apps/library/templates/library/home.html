@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Biblioteca — Librioo{% endblock %}
+{% block content %}
+
+  <h1>Biblioteca</h1>
+  <p>Explora los libros o crea uno nuevo si eres escritor.</p>
+  <p>
+    <a href="{% url 'library:book_list' %}">Ver todos los libros</a>
+    {% if user.is_authenticated %}
+      · <a href="{% url 'library:book_create' %}">Crear libro</a>
+    {% endif %}
+  </p>
+{% endblock %}

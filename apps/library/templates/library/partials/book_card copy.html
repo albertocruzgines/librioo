@@ -1,0 +1,40 @@
+{# Requiere una variable "b" = instancia de Book #}
+<a class="book-card" href="{% url 'library:book_detail' b.id %}" aria-label="Abrir {{ b.title }}">
+  <div class="cover-2x3">
+    {% if b.cover %}
+      <img src="{{ b.cover.url }}" alt="{{ b.title }}">
+    {% else %}
+      <div class="ph">Sin portada</div>
+    {% endif %}
+  </div>
+
+  <div class="book-body">
+    <h3 class="book-title">{{ b.title }}</h3>
+    <div class="book-author">{{ b.author.username }}</div>
+
+    {% if b.synopsis %}
+      <div class="book-desc">{{ b.synopsis|truncatechars:110 }}</div>
+    {% endif %}
+
+    <div class="book-meta">
+      <span>📖 {{ b.num_chapters|default:b.chapters.count }} cap.</span>
+
+      {% if b.status == 'serial' %}
+        <span class="badge badge-serial">En publicación</span>
+      {% elif b.status == 'closed' %}
+        <span class="badge badge-closed">Texto completo</span>
+      {% else %}
+        <span class="badge badge-draft">Borrador</span>
+      {% endif %}
+
+      {% if b.is_paid %}
+        <span class="badge badge-paid">€ <span class="price">{{ b.price_cents|floatformat:-2 }}</span></span>
+      {% else %}
+        <span class="badge badge-free">Gratis</span>
+      {% endif %}
+
+      {% if b.category %}<span class="badge">{{ b.category.name }}</span>{% endif %}
+      <span class="badge">⏱ {{ b.updated_at|date:"d M Y" }}</span>
+    </div>
+  </div>
+</a>

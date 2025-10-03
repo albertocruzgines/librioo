@@ -1,0 +1,726 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Librioo — Descubre{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/bootstrap-grid.min.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/swiper-bundle.min.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/magnific-popup.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/aos.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/vendors/odometer.css' %}">
+  <link rel="stylesheet" href="{% static 'magzin/assets/css/main.css' %}">
+<style>
+  .avatar{ width:56px; height:56px; border-radius:999px; object-fit:cover; background:#f4f4f5; }
+  .initial-avatar{
+    width:56px; height:56px; border-radius:999px;
+    display:flex; align-items:center; justify-content:center;
+    background:#e5e7eb; color:#374151; font-weight:800;
+  }
+</style>
+
+<style>
+  :root{ --cover-w:140px; } /* cambia el tamaño de portada si quieres */
+
+  /* --- Layouts reutilizables --- */
+  .section{ margin: 1.25rem 0 2rem 0; }
+  .section h2{ margin:0 0 .3rem 0; }
+  .muted{ color:#6b7280; }
+
+  .book-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(360px, 1fr));
+    gap:1rem;
+  }
+
+  .scroll-row{
+    display:flex; gap:1rem; overflow:auto; padding: .25rem 0 .5rem;
+    scroll-snap-type: x mandatory;
+  }
+  .scroll-row > *{ scroll-snap-align:start; flex:0 0 360px; }
+
+  /* --- Tarjeta de libro 2:3 (igual que en el parcial) --- */
+  .book-card{
+    display:flex; gap:1rem; align-items:flex-start;
+    background:#fff; border:1px solid #e5e7eb; border-radius:16px;
+    padding:.9rem; box-shadow:0 8px 18px rgba(0,0,0,.06);
+    transition:transform .12s ease, box-shadow .12s ease;
+    text-decoration:none; color:inherit;
+  }
+  .book-card:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,0,0,.08); }
+
+  .cover-2x3{
+    width:var(--cover-w);
+    aspect-ratio:2/3;
+    background:#f5f5f5;
+    border-radius:12px; overflow:hidden;
+    box-shadow:0 6px 14px rgba(0,0,0,.12);
+    flex-shrink:0; position:relative;
+  }
+  .cover-2x3 img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .cover-2x3 .ph{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:#9ca3af;
+  }
+  .book-body{ flex:1; display:flex; flex-direction:column; gap:.35rem; min-width:0; }
+  .book-title{ margin:0; font-weight:800; line-height:1.15; }
+  .book-author{ color:#6b7280; font-size:.9rem; text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
+  .book-desc{ color:#4b5563; font-size:.92rem; margin-top:.15rem; }
+  .book-meta{ display:flex; gap:.55rem; flex-wrap:wrap; align-items:center; margin-top:.3rem; color:#374151; font-size:.9rem; }
+
+  .badge{ display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .55rem; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb; font-size:.78rem; }
+  .badge-serial{ background:#e0f2fe; color:#075985; border-color:#bae6fd; }
+  .badge-closed{ background:#dcfce7; color:#065f46; border-color:#bbf7d0; }
+  .badge-draft{ background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+  .badge-free{ background:#dcfce7; color:#065f46; border-color:#bbf7d0; }
+  .badge-paid{ background:#fef3c7; color:#92400e; border-color:#fde68a; }
+  .price{ font-weight:700; }
+
+  /* Chips / listas auxiliares */
+  .chips{ display:flex; gap:.5rem; flex-wrap:wrap; }
+  .chip{ padding:.35rem .6rem; border:1px solid #e5e7eb; border-radius:999px; background:#fff; font-size:.85rem; }
+  .author-card{
+    border:1px solid #e5e7eb; border-radius:16px; padding:1rem; background:#fff;
+  }
+  .poll-card{
+    border:1px solid #e5e7eb; border-radius:12px; padding:1rem; background:#fff;
+  }
+  .review{
+    border:1px solid #e5e7eb; border-radius:12px; padding:1rem; background:#fff;
+  }
+</style>
+<section class="sec-1-home-1" data-background="{% static 'magzin/assets/imgs/page/bg-home1-sec1.png' %}">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h1 class="ds-2 lh-0 mb-0 text-anime-style-2">La comunidad donde las historias no se leen, se viven.</h1>
+                            <p class="fs-5 mt-0 text-anime-style-1">Un espacio donde escribir y leer son experiencias compartidas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <div class="container-fluid">
+                <div class="swiper swiper-card-hero py-2">
+                    <div class="swiper-wrapper">
+                        <!-- prettier-ignore -->
+                        <div class="swiper-slide">
+                            <div class="article card-1">
+                                <div class="hover-effect-1">
+                                    <a href="#" class="card-img-top">
+                                        <img src="{% static 'magzin/assets/imgs/page/img-1.png' %}" class="w-100 h-100 lazyloaded" alt="magzin">
+                                    </a>
+                                </div>
+                                <div class="card-body hover-up">
+                                    <div class="card-corner">
+                                        <a href="single-3.html" class="arrow-box">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M13.75 6.75L19.25 12L13.75 17.25" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M19 12H4.75" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <div class="curve-one"></div>
+                                        <div class="curve-two"></div>
+                                    </div>
+                                    <div class="left">
+                                        <div class="card-info gap-2 d-flex flex-wrap align-items-center mb-3">
+                                            <a href="#" class="badge bg-2 fs-8">Fashion</a>
+                                            <ul class="d-flex align-items-center gap-4 text-600 m-0 ps-4">
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">Jun 13, 2025</p>
+                                                </li>
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">6 mins read</p>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <a class="hover-underline" href="single-3.html">
+                                            <h4 class="card-title mb-0 text-truncate-2">Local Food Movements in Global Cities</h4>
+                                        </a>
+                                        <p class="card-text text-600 fs-7 mb-0 text-truncate-2">The 'hero piece' in your closet is that standout item that instantly elevates any outfit...</p>
+                                    </div>
+                                    <div class="right">
+                                        <a href="#" class="book-mark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path d="M5.625 5.62498C5.625 4.7045 6.37119 3.95831 7.29167 3.95831H12.7083C13.6288 3.95831 14.375 4.7045 14.375 5.62498V16.0416L10 12.2916L5.625 16.0416V5.62498Z" stroke="#626568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <a href="#" class="comment fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M2.50018 5.43423C2.50018 4.26961 3.44494 3.3255 4.61035 3.3255H15.39C16.5554 3.3255 17.5002 4.26961 17.5002 5.43422V13.1078C17.5002 14.2724 16.5554 15.2165 15.39 15.2165H6.3295L3.41902 17.3786C3.24443 17.5083 3.01159 17.5285 2.81722 17.4309C2.62285 17.3333 2.50018 17.1345 2.50018 16.9171V5.43423ZM4.61035 4.47571C4.08062 4.47571 3.65118 4.90485 3.65118 5.43423V15.7729L5.79569 14.1799C5.89495 14.1062 6.01534 14.0663 6.13902 14.0663H15.39C15.9197 14.0663 16.3492 13.6372 16.3492 13.1078V5.43422C16.3492 4.90485 15.9197 4.47571 15.39 4.47571H4.61035Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="98"></span>
+                                        </a>
+                                        <a href="#" class="readers fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M17.186 10.3224C15.734 13.039 12.9803 14.7266 10.001 14.7266C7.01977 14.7266 4.26612 13.039 2.81407 10.3224C2.70224 10.1114 2.70224 9.88843 2.81407 9.67767C4.26612 6.96107 7.01977 5.27366 10.001 5.27366C12.9803 5.27366 15.7339 6.96107 17.186 9.67767C17.2998 9.88843 17.2998 10.1114 17.186 10.3224ZM18.1135 9.13905C16.4744 6.07185 13.366 4.16669 10.001 4.16669C6.63409 4.16669 3.52561 6.07185 1.88652 9.13905C1.59341 9.68631 1.59341 10.3137 1.88652 10.8606C3.52561 13.9278 6.63409 15.8334 10.001 15.8334C13.366 15.8334 16.4744 13.9278 18.1135 10.8606C18.4066 10.3138 18.4066 9.68631 18.1135 9.13905ZM10.001 12.2707C11.2024 12.2707 12.18 11.2522 12.18 9.99993C12.18 8.7477 11.2024 7.72912 10.001 7.72912C8.79769 7.72912 7.82002 8.7477 7.82002 9.99993C7.82002 11.2522 8.79773 12.2707 10.001 12.2707ZM10.001 6.62215C8.21147 6.62215 6.75752 8.13757 6.75752 9.99997C6.75752 11.8628 8.21151 13.3776 10.001 13.3776C11.7886 13.3776 13.2425 11.8627 13.2425 9.99997C13.2425 8.13757 11.7886 6.62215 10.001 6.62215Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="162"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="article card-1">
+                                <div class="hover-effect-1">
+                                    <a href="#" class="card-img-top">
+                                        <img src="{% static 'magzin/assets/imgs/page/img-2.png' %}" class="w-100 h-100 lazyloaded" alt="magzin">
+                                    </a>
+                                </div>
+                                <div class="card-body hover-up">
+                                    <div class="card-corner">
+                                        <a href="single-3.html" class="arrow-box">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M13.75 6.75L19.25 12L13.75 17.25" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M19 12H4.75" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <div class="curve-one"></div>
+                                        <div class="curve-two"></div>
+                                    </div>
+                                    <div class="left">
+                                        <div class="card-info gap-2 d-flex flex-wrap align-items-center mb-3">
+                                            <a href="#" class="badge bg-3 fs-8">Lifestyle</a>
+                                            <ul class="d-flex align-items-center gap-4 text-600 m-0 ps-4">
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">Jun 13, 2025</p>
+                                                </li>
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">6 mins read</p>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <a class="hover-underline" href="single-3.html">
+                                            <h4 class="card-title mb-0 text-truncate-2">Textile Storytelling in Modern Fashion</h4>
+                                        </a>
+                                        <p class="card-text text-600 fs-7 mb-0 text-truncate-2">In today’s fashion landscape, textiles are more than just fabric — they’re vessels of culture, memory, and innovation</p>
+                                    </div>
+                                    <div class="right">
+                                        <a href="#" class="book-mark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path d="M5.625 5.62498C5.625 4.7045 6.37119 3.95831 7.29167 3.95831H12.7083C13.6288 3.95831 14.375 4.7045 14.375 5.62498V16.0416L10 12.2916L5.625 16.0416V5.62498Z" stroke="#626568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <a href="#" class="comment fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M2.50018 5.43423C2.50018 4.26961 3.44494 3.3255 4.61035 3.3255H15.39C16.5554 3.3255 17.5002 4.26961 17.5002 5.43422V13.1078C17.5002 14.2724 16.5554 15.2165 15.39 15.2165H6.3295L3.41902 17.3786C3.24443 17.5083 3.01159 17.5285 2.81722 17.4309C2.62285 17.3333 2.50018 17.1345 2.50018 16.9171V5.43423ZM4.61035 4.47571C4.08062 4.47571 3.65118 4.90485 3.65118 5.43423V15.7729L5.79569 14.1799C5.89495 14.1062 6.01534 14.0663 6.13902 14.0663H15.39C15.9197 14.0663 16.3492 13.6372 16.3492 13.1078V5.43422C16.3492 4.90485 15.9197 4.47571 15.39 4.47571H4.61035Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="98"></span>
+                                        </a>
+                                        <a href="#" class="readers fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M17.186 10.3224C15.734 13.039 12.9803 14.7266 10.001 14.7266C7.01977 14.7266 4.26612 13.039 2.81407 10.3224C2.70224 10.1114 2.70224 9.88843 2.81407 9.67767C4.26612 6.96107 7.01977 5.27366 10.001 5.27366C12.9803 5.27366 15.7339 6.96107 17.186 9.67767C17.2998 9.88843 17.2998 10.1114 17.186 10.3224ZM18.1135 9.13905C16.4744 6.07185 13.366 4.16669 10.001 4.16669C6.63409 4.16669 3.52561 6.07185 1.88652 9.13905C1.59341 9.68631 1.59341 10.3137 1.88652 10.8606C3.52561 13.9278 6.63409 15.8334 10.001 15.8334C13.366 15.8334 16.4744 13.9278 18.1135 10.8606C18.4066 10.3138 18.4066 9.68631 18.1135 9.13905ZM10.001 12.2707C11.2024 12.2707 12.18 11.2522 12.18 9.99993C12.18 8.7477 11.2024 7.72912 10.001 7.72912C8.79769 7.72912 7.82002 8.7477 7.82002 9.99993C7.82002 11.2522 8.79773 12.2707 10.001 12.2707ZM10.001 6.62215C8.21147 6.62215 6.75752 8.13757 6.75752 9.99997C6.75752 11.8628 8.21151 13.3776 10.001 13.3776C11.7886 13.3776 13.2425 11.8627 13.2425 9.99997C13.2425 8.13757 11.7886 6.62215 10.001 6.62215Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="162"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="article card-1">
+                                <div class="hover-effect-1">
+                                    <a href="#" class="card-img-top">
+                                        <img src="{% static 'magzin/assets/imgs/page/img-3.png' %}" class="w-100 h-100 lazyloaded" alt="magzin">
+                                    </a>
+                                </div>
+                                <div class="card-body hover-up">
+                                    <div class="card-corner">
+                                        <a href="single-3.html" class="arrow-box">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M13.75 6.75L19.25 12L13.75 17.25" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M19 12H4.75" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <div class="curve-one"></div>
+                                        <div class="curve-two"></div>
+                                    </div>
+                                    <div class="left">
+                                        <div class="card-info gap-2 d-flex flex-wrap align-items-center mb-3">
+                                            <a href="#" class="badge bg-5 fs-8">Culture</a>
+                                            <ul class="d-flex align-items-center gap-4 text-600 m-0 ps-4">
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">Jun 13, 2025</p>
+                                                </li>
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">6 mins read</p>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <a class="hover-underline" href="single-3.html">
+                                            <h4 class="card-title mb-0 text-truncate-2">Museums x Couture: A New Collaboration</h4>
+                                        </a>
+                                        <p class="card-text text-600 fs-7 mb-0 text-truncate-2">Where history meets high fashion, a new wave of collaboration is redefining both art and style.</p>
+                                    </div>
+                                    <div class="right">
+                                        <a href="#" class="book-mark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path d="M5.625 5.62498C5.625 4.7045 6.37119 3.95831 7.29167 3.95831H12.7083C13.6288 3.95831 14.375 4.7045 14.375 5.62498V16.0416L10 12.2916L5.625 16.0416V5.62498Z" stroke="#626568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <a href="#" class="comment fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M2.50018 5.43423C2.50018 4.26961 3.44494 3.3255 4.61035 3.3255H15.39C16.5554 3.3255 17.5002 4.26961 17.5002 5.43422V13.1078C17.5002 14.2724 16.5554 15.2165 15.39 15.2165H6.3295L3.41902 17.3786C3.24443 17.5083 3.01159 17.5285 2.81722 17.4309C2.62285 17.3333 2.50018 17.1345 2.50018 16.9171V5.43423ZM4.61035 4.47571C4.08062 4.47571 3.65118 4.90485 3.65118 5.43423V15.7729L5.79569 14.1799C5.89495 14.1062 6.01534 14.0663 6.13902 14.0663H15.39C15.9197 14.0663 16.3492 13.6372 16.3492 13.1078V5.43422C16.3492 4.90485 15.9197 4.47571 15.39 4.47571H4.61035Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="98"></span>
+                                        </a>
+                                        <a href="#" class="readers fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M17.186 10.3224C15.734 13.039 12.9803 14.7266 10.001 14.7266C7.01977 14.7266 4.26612 13.039 2.81407 10.3224C2.70224 10.1114 2.70224 9.88843 2.81407 9.67767C4.26612 6.96107 7.01977 5.27366 10.001 5.27366C12.9803 5.27366 15.7339 6.96107 17.186 9.67767C17.2998 9.88843 17.2998 10.1114 17.186 10.3224ZM18.1135 9.13905C16.4744 6.07185 13.366 4.16669 10.001 4.16669C6.63409 4.16669 3.52561 6.07185 1.88652 9.13905C1.59341 9.68631 1.59341 10.3137 1.88652 10.8606C3.52561 13.9278 6.63409 15.8334 10.001 15.8334C13.366 15.8334 16.4744 13.9278 18.1135 10.8606C18.4066 10.3138 18.4066 9.68631 18.1135 9.13905ZM10.001 12.2707C11.2024 12.2707 12.18 11.2522 12.18 9.99993C12.18 8.7477 11.2024 7.72912 10.001 7.72912C8.79769 7.72912 7.82002 8.7477 7.82002 9.99993C7.82002 11.2522 8.79773 12.2707 10.001 12.2707ZM10.001 6.62215C8.21147 6.62215 6.75752 8.13757 6.75752 9.99997C6.75752 11.8628 8.21151 13.3776 10.001 13.3776C11.7886 13.3776 13.2425 11.8627 13.2425 9.99997C13.2425 8.13757 11.7886 6.62215 10.001 6.62215Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="162"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="article card-1">
+                                <div class="hover-effect-1">
+                                    <a href="#" class="card-img-top">
+                                        <img src="{% static 'magzin/assets/imgs/page/img-2.png' %}" class="w-100 h-100 lazyloaded" alt="magzin">
+                                    </a>
+                                </div>
+                                <div class="card-body hover-up">
+                                    <div class="card-corner">
+                                        <a href="single-3.html" class="arrow-box">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M13.75 6.75L19.25 12L13.75 17.25" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M19 12H4.75" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <div class="curve-one"></div>
+                                        <div class="curve-two"></div>
+                                    </div>
+                                    <div class="left">
+                                        <div class="card-info gap-2 d-flex flex-wrap align-items-center mb-3">
+                                            <a href="#" class="badge bg-3 fs-8">Lifestyle</a>
+                                            <ul class="d-flex align-items-center gap-4 text-600 m-0 ps-4">
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">Jun 13, 2025</p>
+                                                </li>
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">6 mins read</p>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <a class="hover-underline" href="single-3.html">
+                                            <h4 class="card-title mb-0 text-truncate-2">Textile Storytelling in Modern Fashion</h4>
+                                        </a>
+                                        <p class="card-text text-600 fs-7 mb-0 text-truncate-2">In today’s fashion landscape, textiles are more than just fabric — they’re vessels of culture, memory, and innovation</p>
+                                    </div>
+                                    <div class="right">
+                                        <a href="#" class="book-mark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path d="M5.625 5.62498C5.625 4.7045 6.37119 3.95831 7.29167 3.95831H12.7083C13.6288 3.95831 14.375 4.7045 14.375 5.62498V16.0416L10 12.2916L5.625 16.0416V5.62498Z" stroke="#626568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <a href="#" class="comment fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M2.50018 5.43423C2.50018 4.26961 3.44494 3.3255 4.61035 3.3255H15.39C16.5554 3.3255 17.5002 4.26961 17.5002 5.43422V13.1078C17.5002 14.2724 16.5554 15.2165 15.39 15.2165H6.3295L3.41902 17.3786C3.24443 17.5083 3.01159 17.5285 2.81722 17.4309C2.62285 17.3333 2.50018 17.1345 2.50018 16.9171V5.43423ZM4.61035 4.47571C4.08062 4.47571 3.65118 4.90485 3.65118 5.43423V15.7729L5.79569 14.1799C5.89495 14.1062 6.01534 14.0663 6.13902 14.0663H15.39C15.9197 14.0663 16.3492 13.6372 16.3492 13.1078V5.43422C16.3492 4.90485 15.9197 4.47571 15.39 4.47571H4.61035Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="98"></span>
+                                        </a>
+                                        <a href="#" class="readers fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M17.186 10.3224C15.734 13.039 12.9803 14.7266 10.001 14.7266C7.01977 14.7266 4.26612 13.039 2.81407 10.3224C2.70224 10.1114 2.70224 9.88843 2.81407 9.67767C4.26612 6.96107 7.01977 5.27366 10.001 5.27366C12.9803 5.27366 15.7339 6.96107 17.186 9.67767C17.2998 9.88843 17.2998 10.1114 17.186 10.3224ZM18.1135 9.13905C16.4744 6.07185 13.366 4.16669 10.001 4.16669C6.63409 4.16669 3.52561 6.07185 1.88652 9.13905C1.59341 9.68631 1.59341 10.3137 1.88652 10.8606C3.52561 13.9278 6.63409 15.8334 10.001 15.8334C13.366 15.8334 16.4744 13.9278 18.1135 10.8606C18.4066 10.3138 18.4066 9.68631 18.1135 9.13905ZM10.001 12.2707C11.2024 12.2707 12.18 11.2522 12.18 9.99993C12.18 8.7477 11.2024 7.72912 10.001 7.72912C8.79769 7.72912 7.82002 8.7477 7.82002 9.99993C7.82002 11.2522 8.79773 12.2707 10.001 12.2707ZM10.001 6.62215C8.21147 6.62215 6.75752 8.13757 6.75752 9.99997C6.75752 11.8628 8.21151 13.3776 10.001 13.3776C11.7886 13.3776 13.2425 11.8627 13.2425 9.99997C13.2425 8.13757 11.7886 6.62215 10.001 6.62215Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="162"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="article card-1">
+                                <div class="hover-effect-1">
+                                    <a href="#" class="card-img-top">
+                                        <img src="{% static 'magzin/assets/imgs/page/img-1.png' %}"  class="w-100 h-100 lazyloaded" alt="magzin">
+                                    </a>
+                                </div>
+                                <div class="card-body hover-up">
+                                    <div class="card-corner">
+                                        <a href="single-3.html" class="arrow-box">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M13.75 6.75L19.25 12L13.75 17.25" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M19 12H4.75" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <div class="curve-one"></div>
+                                        <div class="curve-two"></div>
+                                    </div>
+                                    <div class="left">
+                                        <div class="card-info gap-2 d-flex flex-wrap align-items-center mb-3">
+                                            <a href="#" class="badge bg-2 fs-8">Fashion</a>
+                                            <ul class="d-flex align-items-center gap-4 text-600 m-0 ps-4">
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">Jun 13, 2025</p>
+                                                </li>
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">6 mins read</p>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <a class="hover-underline" href="single-3.html">
+                                            <h4 class="card-title mb-0 text-truncate-2">Local Food Movements in Global Cities</h4>
+                                        </a>
+                                        <p class="card-text text-600 fs-7 mb-0 text-truncate-2">The 'hero piece' in your closet is that standout item that instantly elevates any outfit...</p>
+                                    </div>
+                                    <div class="right">
+                                        <a href="#" class="book-mark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path d="M5.625 5.62498C5.625 4.7045 6.37119 3.95831 7.29167 3.95831H12.7083C13.6288 3.95831 14.375 4.7045 14.375 5.62498V16.0416L10 12.2916L5.625 16.0416V5.62498Z" stroke="#626568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <a href="#" class="comment fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M2.50018 5.43423C2.50018 4.26961 3.44494 3.3255 4.61035 3.3255H15.39C16.5554 3.3255 17.5002 4.26961 17.5002 5.43422V13.1078C17.5002 14.2724 16.5554 15.2165 15.39 15.2165H6.3295L3.41902 17.3786C3.24443 17.5083 3.01159 17.5285 2.81722 17.4309C2.62285 17.3333 2.50018 17.1345 2.50018 16.9171V5.43423ZM4.61035 4.47571C4.08062 4.47571 3.65118 4.90485 3.65118 5.43423V15.7729L5.79569 14.1799C5.89495 14.1062 6.01534 14.0663 6.13902 14.0663H15.39C15.9197 14.0663 16.3492 13.6372 16.3492 13.1078V5.43422C16.3492 4.90485 15.9197 4.47571 15.39 4.47571H4.61035Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="98"></span>
+                                        </a>
+                                        <a href="#" class="readers fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M17.186 10.3224C15.734 13.039 12.9803 14.7266 10.001 14.7266C7.01977 14.7266 4.26612 13.039 2.81407 10.3224C2.70224 10.1114 2.70224 9.88843 2.81407 9.67767C4.26612 6.96107 7.01977 5.27366 10.001 5.27366C12.9803 5.27366 15.7339 6.96107 17.186 9.67767C17.2998 9.88843 17.2998 10.1114 17.186 10.3224ZM18.1135 9.13905C16.4744 6.07185 13.366 4.16669 10.001 4.16669C6.63409 4.16669 3.52561 6.07185 1.88652 9.13905C1.59341 9.68631 1.59341 10.3137 1.88652 10.8606C3.52561 13.9278 6.63409 15.8334 10.001 15.8334C13.366 15.8334 16.4744 13.9278 18.1135 10.8606C18.4066 10.3138 18.4066 9.68631 18.1135 9.13905ZM10.001 12.2707C11.2024 12.2707 12.18 11.2522 12.18 9.99993C12.18 8.7477 11.2024 7.72912 10.001 7.72912C8.79769 7.72912 7.82002 8.7477 7.82002 9.99993C7.82002 11.2522 8.79773 12.2707 10.001 12.2707ZM10.001 6.62215C8.21147 6.62215 6.75752 8.13757 6.75752 9.99997C6.75752 11.8628 8.21151 13.3776 10.001 13.3776C11.7886 13.3776 13.2425 11.8627 13.2425 9.99997C13.2425 8.13757 11.7886 6.62215 10.001 6.62215Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="162"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="article card-1">
+                                <div class="hover-effect-1">
+                                    <a href="#" class="card-img-top">
+                                        <img src="{% static 'magzin/assets/imgs/page/img-3.png' %}" class="w-100 h-100 lazyloaded" alt="magzin">
+                                    </a>
+                                </div>
+                                <div class="card-body hover-up">
+                                    <div class="card-corner">
+                                        <a href="single-3.html" class="arrow-box">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M13.75 6.75L19.25 12L13.75 17.25" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M19 12H4.75" stroke="#0E0E0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <div class="curve-one"></div>
+                                        <div class="curve-two"></div>
+                                    </div>
+                                    <div class="left">
+                                        <div class="card-info gap-2 d-flex flex-wrap align-items-center mb-3">
+                                            <a href="#" class="badge bg-5 fs-8">Culture</a>
+                                            <ul class="d-flex align-items-center gap-4 text-600 m-0 ps-4">
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">Jun 13, 2025</p>
+                                                </li>
+                                                <li>
+                                                    <p class="fs-8 fw-medium m-0">6 mins read</p>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <a class="hover-underline" href="single-3.html">
+                                            <h4 class="card-title mb-0 text-truncate-2">Museums x Couture: A New Collaboration</h4>
+                                        </a>
+                                        <p class="card-text text-600 fs-7 mb-0 text-truncate-2">Where history meets high fashion, a new wave of collaboration is redefining both art and style.</p>
+                                    </div>
+                                    <div class="right">
+                                        <a href="#" class="book-mark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path d="M5.625 5.62498C5.625 4.7045 6.37119 3.95831 7.29167 3.95831H12.7083C13.6288 3.95831 14.375 4.7045 14.375 5.62498V16.0416L10 12.2916L5.625 16.0416V5.62498Z" stroke="#626568" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </a>
+                                        <a href="#" class="comment fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M2.50018 5.43423C2.50018 4.26961 3.44494 3.3255 4.61035 3.3255H15.39C16.5554 3.3255 17.5002 4.26961 17.5002 5.43422V13.1078C17.5002 14.2724 16.5554 15.2165 15.39 15.2165H6.3295L3.41902 17.3786C3.24443 17.5083 3.01159 17.5285 2.81722 17.4309C2.62285 17.3333 2.50018 17.1345 2.50018 16.9171V5.43423ZM4.61035 4.47571C4.08062 4.47571 3.65118 4.90485 3.65118 5.43423V15.7729L5.79569 14.1799C5.89495 14.1062 6.01534 14.0663 6.13902 14.0663H15.39C15.9197 14.0663 16.3492 13.6372 16.3492 13.1078V5.43422C16.3492 4.90485 15.9197 4.47571 15.39 4.47571H4.61035Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="98"></span>
+                                        </a>
+                                        <a href="#" class="readers fs-8">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M17.186 10.3224C15.734 13.039 12.9803 14.7266 10.001 14.7266C7.01977 14.7266 4.26612 13.039 2.81407 10.3224C2.70224 10.1114 2.70224 9.88843 2.81407 9.67767C4.26612 6.96107 7.01977 5.27366 10.001 5.27366C12.9803 5.27366 15.7339 6.96107 17.186 9.67767C17.2998 9.88843 17.2998 10.1114 17.186 10.3224ZM18.1135 9.13905C16.4744 6.07185 13.366 4.16669 10.001 4.16669C6.63409 4.16669 3.52561 6.07185 1.88652 9.13905C1.59341 9.68631 1.59341 10.3137 1.88652 10.8606C3.52561 13.9278 6.63409 15.8334 10.001 15.8334C13.366 15.8334 16.4744 13.9278 18.1135 10.8606C18.4066 10.3138 18.4066 9.68631 18.1135 9.13905ZM10.001 12.2707C11.2024 12.2707 12.18 11.2522 12.18 9.99993C12.18 8.7477 11.2024 7.72912 10.001 7.72912C8.79769 7.72912 7.82002 8.7477 7.82002 9.99993C7.82002 11.2522 8.79773 12.2707 10.001 12.2707ZM10.001 6.62215C8.21147 6.62215 6.75752 8.13757 6.75752 9.99997C6.75752 11.8628 8.21151 13.3776 10.001 13.3776C11.7886 13.3776 13.2425 11.8627 13.2425 9.99997C13.2425 8.13757 11.7886 6.62215 10.001 6.62215Z" fill="#626568" />
+                                            </svg>
+                                            <span class="odometer text-nowrap" data-count="162"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            
+        </section>
+{# ===================== HERO / DESTACADOS ===================== #}
+<section class="section">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h2 class="ds-2 lh-0 mb-0 text-anime-style-2">Historias Destacadas</h2>
+                            <p class="fs-5 mt-0 text-anime-style-1">Actualizados recientemente, listos para enganchartes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+
+              <p class="muted"></p>
+              {% if featured %}
+                <div class="book-grid">
+                  {% for b in featured %}
+                    {% include "library/partials/book_card.html" with b=b %}
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="muted">Aún no hay destacados.</p>
+              {% endif %}
+              </div>
+          </div>
+
+</section>
+
+
+{# ===================== NOVEDADES PARA TI ===================== #}
+{% if new_for_you %}
+<section class="section">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h2 class="ds-2 lh-0 mb-0 text-anime-style-2">Novedades para ti</h2>
+                            <p class="fs-5 mt-0 text-anime-style-1">Libros que sigues o de tus géneros favoritos con capítulos nuevos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+            <div class="scroll-row">
+              {% for b in new_for_you %}
+                {% include "library/partials/book_card.html" with b=b %}
+              {% endfor %}
+            </div>
+            </div>
+</section>
+{% endif %}
+
+{# ===================== TENDENCIAS ===================== #}
+<section class="section">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h2 class="ds-2 lh-0 mb-0 text-anime-style-2">En Tendencia</h2>
+                            <p class="fs-5 mt-0 text-anime-style-1">Lo más leído de la semana</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+              {% if trending %}
+                <div class="book-grid">
+                  {% for b in trending %}
+                    {% include "library/partials/book_card.html" with b=b %}
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="muted">Aún no hay actividad suficiente para mostrar tendencias.</p>
+              {% endif %}
+            </div>
+</section>
+
+{# ===================== CAPÍTULOS FRESCOS (últimos 7 días) ===================== #}
+
+
+<section class="section">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h2 class="ds-2 lh-0 mb-0 text-anime-style-2">Capítulos recién publicados</h2>
+                            <p class="fs-5 mt-0 text-anime-style-1">Lo último de todos los géneros</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+              {% if fresh_chapters %}
+                <div class="book-grid">
+                     
+                  {% for b in trending %}
+                    {% include "library/partials/book_card.html" with b=b %}
+                  {% endfor %}
+                </div>
+           
+              {% else %}
+                <p class="muted">No hay capítulos nuevos esta semana.</p>
+              {% endif %}
+            </div>
+</section>
+
+{# ===================== RECOMENDACIONES PERSONALIZADAS ===================== #}
+{% if user.is_authenticated and recommendations %}
+<section class="section">
+  <h2>Recomendados para ti</h2>
+  <p class="muted">Basado en lo que lees y sigues</p>
+  <div class="book-grid">
+    {% for b in recommendations %}
+      {% include "library/partials/book_card.html" with b=b %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ===================== PICKS EDITORIALES ===================== #}
+<section class="section">
+  <h2>Selección del equipo</h2>
+  <p class="muted">Grandes historias que no puedes perderte</p>
+  {% if editors_picks %}
+    <div class="book-grid">
+      {% for b in editors_picks %}
+        {% include "library/partials/book_card.html" with b=b %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">Aún estamos eligiendo nuestros favoritos.</p>
+  {% endif %}
+</section>
+
+{# ===================== TOP CATEGORÍAS ===================== #}
+<section class="section">
+  <h2>Top en diferentes géneros</h2>
+  <p class="muted">Encuentra tu próxima lectura perfecta</p>
+  {% if top_categories %}
+    <div class="chips">
+      {% for c in top_categories %}
+        <a class="chip" href="{% url 'library:book_list' %}?cat={{ c.slug }}">
+          {{ c.name }}
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">Pronto verás aquí tus categorías más activas.</p>
+  {% endif %}
+</section>
+
+{# ===================== AUTORES DESTACADOS ===================== #}
+<section class="section">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h2 class="ds-2 lh-0 mb-0 text-anime-style-2">Autores Destacados</h2>
+                            <p class="fs-5 mt-0 text-anime-style-1">Quienes más están brillando esta semana</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+              {% if top_authors %}
+                <div class="scroll-row">
+                  {% for a in top_authors %}
+                    <div class="author-card" style="flex:0 0 320px; display:flex; gap:.85rem; align-items:center;">
+                      {% if a.avatar %}
+                              <img src="{{ a.avatar.url }}" alt="{{ a.username }}" class="avatar" loading="lazy">
+                      {% else %}
+                        <div class="initial-avatar">{{ a.username|slice:":1"|upper }}</div>
+                      {% endif %}
+                      <div>
+                        <div style="font-weight:700; font-size:1.05rem;">{{ a.username }}</div>
+                        <div class="muted">📚 {{ a.books_count }} libros</div>
+                        <div>👀 {{ a.views7d }} lecturas 7d · 👥 {{ a.followers_count }} seguidores</div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="muted">Aún no hay autores destacados.</p>
+              {% endif %}
+            </div>
+</section>
+
+{# ===================== ENCUESTAS ACTIVAS ===================== #}
+{% if active_polls %}
+<section class="section">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h2 class="ds-2 lh-0 mb-0 text-anime-style-2">Encuestas Activas</h2>
+                            <p class="fs-5 mt-0 text-anime-style-1">Decide el próximo giro de la historia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+              <div class="scroll-row">
+                {% for p in active_polls %}
+                  <div class="poll-card" style="flex:0 0 420px;">
+                    <div class="muted">Cap. {{ p.chapter.number }} — {{ p.chapter.book.title }}</div>
+                    <h3 style="margin:.3rem 0">{{ p.question }}</h3>
+                    <div class="muted">Votos: {{ p.total_votes }}</div>
+                    <div class="chips" style="margin-top:.5rem;">
+                      {% for opt in p.options.all %}
+                        <form method="post" action="{% url 'library:vote_poll' p.id opt.id %}">
+                          {% csrf_token %}
+                          <button class="chip" type="submit">{{ opt.text }}</button>
+                        </form>
+                      {% endfor %}
+                    </div>
+                    <div style="margin-top:.6rem;">
+                      <a href="{% url 'library:chapter_read' p.chapter.id %}">Ir al capítulo →</a>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+</section>
+{% endif %}
+
+{# ===================== RESEÑAS RECIENTES ===================== #}
+{% if recent_reviews %}
+<section class="section">
+            <div class="container">
+                <div class="row mb-3 mb-lg-5">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h2 class="ds-2 lh-0 mb-0 text-anime-style-2">Últimas Reseñas</h2>
+                            <p class="fs-5 mt-0 text-anime-style-1">Quienes más están brillando esta semana</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+  <div class="scroll-row">
+    {% for r in recent_reviews %}
+      <div class="review" style="flex:0 0 420px;">
+        <div><strong>{{ r.user.username }}</strong> <span class="muted">· {{ r.created_at|date:"d M Y, H:i" }}</span></div>
+        <div style="margin:.4rem 0 0 0;">{{ r.text|linebreaksbr }}</div>
+      </div>
+    {% endfor %}
+  </div>
+   </div>
+</section>
+{% endif %}
+  <!-- JS: jQuery primero, luego vendors, al final main.js -->
+  <script src="{% static 'magzin/assets/js/vendors/jquery-3.7.1.min.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/swiper-bundle.min.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/jquery.magnific-popup.min.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/jquery.carouselTicker.min.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/aos.js' %}"></script>
+  {# O usa wow.min.js en lugar de AOS #}
+  <script src="{% static 'magzin/assets/js/vendors/jquery.appear.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/jquery.odometer.min.js' %}"></script>
+
+  <!-- Opcionales -->
+  <script src="{% static 'magzin/assets/js/vendors/headhesive.min.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/smart-stick-nav.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/gsap.min.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/ScrollTrigger.min.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/ScrollToPlugin.min.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/Splitetext.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/lazysize.min.js' %}" async></script>
+  <script src="{% static 'magzin/assets/js/vendors/image-hover-effects.js' %}"></script>
+  <script src="{% static 'magzin/assets/js/vendors/howler.min.js' %}"></script>
+{% endblock %}
